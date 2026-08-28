@@ -72,14 +72,11 @@ export function MobileDrawer({ open, active, onSelect, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex md:hidden">
-      {/* Overlay com entrada em fade suave */}
       <div
         className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200 motion-reduce:animate-none"
         onClick={onClose}
         aria-hidden="true"
       />
-
-      {/* Painel lateral com deslize fluido acelerado via GPU */}
       <div className="relative flex h-full w-72 max-w-[80vw] flex-col border-r border-slate-800 bg-slate-900 px-4 py-6 shadow-2xl select-none motion-safe:animate-in motion-safe:slide-in-from-left motion-safe:duration-250 motion-safe:ease-out motion-reduce:animate-none">
         <div className="mb-8 flex items-center justify-between px-2">
           <div className="flex items-center gap-3 min-w-0">
