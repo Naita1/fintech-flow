@@ -9,7 +9,6 @@ export default function ProfitLossIndicator({ saldo, size = "md" }) {
     <div
       className={`
         group flex h-full min-w-0 items-center gap-3 rounded-xl border px-4 py-3 shadow-sm select-none
-        /* Transições de Estado e Performance GPU */
         transition-all duration-200 ease-out
         motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-md
         motion-reduce:transition-none

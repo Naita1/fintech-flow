@@ -1,21 +1,12 @@
 import jwt from "jsonwebtoken";
-
-function parseCookies(header) {
-  const list = {};
-  if (!header) return list;
-  header.split(";").forEach((cookie) => {
-    const parts = cookie.split("=");
-    list[parts.shift().trim()] = decodeURIComponent(parts.join("="));
-  });
-  return list;
-}
+import cookie from "cookie";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Método não permitido" });
   }
 
-  const cookies = parseCookies(req.headers.cookie);
+  const cookies = cookie.parse(req.headers.cookie || "");
   const token = cookies.session;
 
   if (!token) {

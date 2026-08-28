@@ -22,7 +22,6 @@ export default function FinancialTable({ transacoes }) {
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      {/* Visualização Desktop / Tablet */}
       <div className="hidden overflow-x-auto md:block scrolling-touch">
         <table className="w-full text-left text-sm">
           <thead>
@@ -72,7 +71,6 @@ export default function FinancialTable({ transacoes }) {
         </table>
       </div>
 
-      {/* Visualização Mobile (Cards) */}
       <div className="divide-y divide-slate-100 md:hidden">
         {sorted.map((t) => (
           <div

@@ -1,11 +1,9 @@
-import React from "react";
 
 export default function ChartCard({ title, subtitle, children }) {
   return (
     <div
       className="
         w-full min-w-0 rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm
-        /* Microinterações e Desempenho (GPU) */
         transition-all duration-200 ease-out
         motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-md
         motion-reduce:transition-none

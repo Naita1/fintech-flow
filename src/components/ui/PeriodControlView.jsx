@@ -12,7 +12,6 @@ export default function PeriodControlView({ periods = [], onAddTransaction, tipo
   const [selectedId, setSelectedId] = useState(() => periods[0]?.id || "");
   const [showForm, setShowForm] = useState(false);
 
-  // Busca o período atual ou recai sobre o primeiro item como fallback
   const period = periods.find((p) => p.id === selectedId) || periods[0];
   const transacoes = period?.transacoes || [];
   const { entradas, saidas, saldo } = totals(transacoes);
@@ -31,7 +30,6 @@ export default function PeriodControlView({ periods = [], onAddTransaction, tipo
           onClick={() => setShowForm(true)}
           className="
             inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-800 px-4 py-2.5 text-sm font-semibold text-white shadow-sm sm:w-auto
-            /* Performance & Microinterações */
             transition-all duration-150 ease-out
             hover:bg-slate-900 hover:shadow
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2

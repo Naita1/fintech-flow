@@ -36,8 +36,6 @@ export default function TransactionForm({ onClose, onSubmit }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/60 p-0 backdrop-blur-[2px] transition-opacity duration-200 sm:items-center sm:p-4">
       <div className="max-h-[90vh] sm:max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-2xl scrolling-touch sm:max-w-lg sm:rounded-2xl motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-6 sm:motion-safe:zoom-in-95 motion-reduce:transition-none">
-        
-        {/* Cabeçalho Fixo */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-5 py-4 backdrop-blur-md">
           <h2 className="text-base font-bold text-slate-800">Nova movimentação</h2>
           <button
@@ -55,10 +53,7 @@ export default function TransactionForm({ onClose, onSubmit }) {
             <X size={18} />
           </button>
         </div>
-
-        {/* Formulário */}
         <form onSubmit={handleSubmit} className="space-y-4 px-5 py-5 sm:px-6">
-          {/* Seletor de Tipo */}
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">
               Tipo
@@ -105,8 +100,6 @@ export default function TransactionForm({ onClose, onSubmit }) {
               </button>
             </div>
           </div>
-
-          {/* Campo Descrição */}
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">
               Descrição
@@ -124,8 +117,6 @@ export default function TransactionForm({ onClose, onSubmit }) {
               "
             />
           </div>
-
-          {/* Categoria e Valor */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -168,8 +159,6 @@ export default function TransactionForm({ onClose, onSubmit }) {
               />
             </div>
           </div>
-
-          {/* Campo Data */}
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">
               Data
@@ -188,8 +177,6 @@ export default function TransactionForm({ onClose, onSubmit }) {
               "
             />
           </div>
-
-          {/* Campo Observação */}
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">
               Observação <span className="normal-case text-slate-300">(opcional)</span>
@@ -207,8 +194,6 @@ export default function TransactionForm({ onClose, onSubmit }) {
               "
             />
           </div>
-
-          {/* Ações */}
           <div className="flex gap-3 pt-2">
             <button
               type="button"

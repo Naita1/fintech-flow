@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useAuth } from "./context/AuthContext";
 import LoginPage from "./views/LoginPage";
 import { Sidebar, MobileDrawer } from "./components/layout/Sidebar";
@@ -56,7 +56,6 @@ export default function App() {
     );
   };
 
-  // 1. Enquanto verifica se há sessão no cookie
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-400">
@@ -65,18 +64,13 @@ export default function App() {
     );
   }
 
-  // 2. Se não estiver autenticado, exibe a tela de login
   if (!user) {
     return <LoginPage />;
   }
 
-  // 3. Usuário autenticado: renderiza a aplicação
   return (
     <div className="flex min-h-screen w-full bg-slate-50">
-      {/* Sidebar fixa no desktop */}
       <Sidebar active={view} onSelect={setView} />
-
-      {/* Gaveta de navegação no mobile */}
       <MobileDrawer
         open={mobileNavOpen}
         active={view}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -12,9 +12,7 @@ import {
 
 export default function FinanceDashboard() {
   const [periodo, setPeriodo] = useState('semanal'); // 'semanal' ou 'quinzenal'
-  
-  // Dados de exemplo
-  const [transacoes, setTransacoes] = useState([
+    const [transacoes, setTransacoes] = useState([
     { id: 1, descricao: 'Venda de Serviços', valor: 3500.00, tipo: 'entrada', periodo: 'semanal', data: '2026-08-24' },
     { id: 2, descricao: 'Compra de Material', valor: 1200.00, tipo: 'saida', periodo: 'semanal', data: '2026-08-23' },
     { id: 3, descricao: 'Manutenção de Equipamento', valor: 450.00, tipo: 'saida', periodo: 'semanal', data: '2026-08-22' },
@@ -22,16 +20,11 @@ export default function FinanceDashboard() {
     { id: 5, descricao: 'Pagamento de Fornecedores', valor: 3200.00, tipo: 'saida', periodo: 'quinzenal', data: '2026-08-18' },
     { id: 6, descricao: 'Licenças de Software', valor: 600.00, tipo: 'saida', periodo: 'quinzenal', data: '2026-08-20' },
   ]);
-
-  // Form State
   const [descricao, setDescricao] = useState('');
   const [valor, setValor] = useState('');
   const [tipo, setTipo] = useState('entrada');
-
-  // Filtragem dos dados conforme o período selecionado
   const transacoesFiltradas = transacoes.filter(t => t.periodo === periodo);
 
-  // Cálculos financeiros
   const totalEntradas = transacoesFiltradas
     .filter(t => t.tipo === 'entrada')
     .reduce((acc, t) => acc + t.valor, 0);
@@ -42,11 +35,8 @@ export default function FinanceDashboard() {
 
   const saldoTotal = totalEntradas - totalSaidas;
   const ehLucro = saldoTotal >= 0;
-
-  // Porcentagem de gastos em relação às entradas
   const porcentagemGastos = totalEntradas > 0 ? Math.min((totalSaidas / totalEntradas) * 100, 100) : 0;
 
-  // Adicionar nova transação
   const handleAdicionar = (e) => {
     e.preventDefault();
     if (!descricao || !valor) return;
@@ -65,7 +55,6 @@ export default function FinanceDashboard() {
     setValor('');
   };
 
-  // Remover transação
   const handleRemover = (id) => {
     setTransacoes(transacoes.filter(t => t.id !== id));
   };
@@ -73,15 +62,12 @@ export default function FinanceDashboard() {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 p-4 sm:p-6 lg:p-8 font-sans selection:bg-blue-500/30 selection:text-white motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-300">
       <div className="max-w-7xl mx-auto space-y-6">
-        
-        {/* Cabeçalho */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800/80 pb-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800/80 pb-5">
           <div className="min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight truncate">Painel Financeiro</h1>
             <p className="text-slate-400 text-xs sm:text-sm mt-1 truncate">Gestão simplificada de entradas, saídas e lucros.</p>
           </div>
 
-          {/* Seletor de Período (Semanal / Quinzenal) */}
           <div className="inline-flex bg-slate-800/90 p-1 rounded-xl border border-slate-700/80 shadow-sm shrink-0 self-start sm:self-auto">
             <button
               type="button"
@@ -116,9 +102,7 @@ export default function FinanceDashboard() {
           </div>
         </div>
 
-        {/* Resumo Financeiro (Cards KPI) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {/* Card Entradas */}
           <div className="group relative overflow-hidden bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 sm:p-5 shadow-sm select-none
             transition-all duration-200 ease-out
             hover:border-slate-600 hover:bg-slate-800 hover:shadow-md
@@ -134,7 +118,6 @@ export default function FinanceDashboard() {
             </p>
           </div>
 
-          {/* Card Saídas */}
           <div className="group relative overflow-hidden bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 sm:p-5 shadow-sm select-none
             transition-all duration-200 ease-out
             hover:border-slate-600 hover:bg-slate-800 hover:shadow-md
@@ -149,8 +132,6 @@ export default function FinanceDashboard() {
               R$ {totalSaidas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </p>
           </div>
-
-          {/* Card Resultado / Lucro */}
           <div className="group relative overflow-hidden col-span-1 sm:col-span-2 md:col-span-1 bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 sm:p-5 shadow-sm select-none
             transition-all duration-200 ease-out
             hover:border-slate-600 hover:bg-slate-800 hover:shadow-md
@@ -174,10 +155,7 @@ export default function FinanceDashboard() {
           </div>
         </div>
 
-        {/* Dashboard Gráfico Visual & Formulário */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* Formulário de Lançamento */}
           <div className="bg-slate-800/50 border border-slate-700/60 rounded-2xl p-5 shadow-sm">
             <h2 className="text-base sm:text-lg font-bold text-white mb-4 flex items-center gap-2">
               <PlusCircle className="w-5 h-5 text-blue-400 shrink-0" />
@@ -260,8 +238,6 @@ export default function FinanceDashboard() {
               </button>
             </form>
           </div>
-
-          {/* Indicadores Visuais / Proporção de Caixa */}
           <div className="lg:col-span-2 bg-slate-800/50 border border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between shadow-sm">
             <div>
               <h2 className="text-base sm:text-lg font-bold text-white mb-4 flex items-center gap-2">
@@ -270,7 +246,6 @@ export default function FinanceDashboard() {
               </h2>
 
               <div className="space-y-5">
-                {/* Barra de comprometimento */}
                 <div>
                   <div className="flex justify-between text-xs mb-1.5">
                     <span className="text-slate-400 font-medium">Comprometimento da Receita (Gastos vs Ganho)</span>
@@ -285,8 +260,6 @@ export default function FinanceDashboard() {
                     />
                   </div>
                 </div>
-
-                {/* Comparativo Visual */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-700/40">
                     <div className="flex items-center justify-between text-xs">
@@ -318,15 +291,11 @@ export default function FinanceDashboard() {
             </div>
           </div>
         </div>
-
-        {/* Tabela de Lançamentos (Planilha) */}
         <div className="bg-slate-800/50 border border-slate-700/60 rounded-2xl p-5 shadow-sm overflow-hidden">
           <h2 className="text-base sm:text-lg font-bold text-white mb-4 flex items-center gap-2">
             <Table className="w-5 h-5 text-blue-400 shrink-0" />
             <span>Planilha de Movimentações ({periodo})</span>
           </h2>
-
-          {/* Visualização Desktop / Tablet */}
           <div className="hidden md:block overflow-x-auto scrolling-touch">
             <table className="w-full text-left text-sm text-slate-300">
               <thead className="text-xs uppercase bg-slate-900/80 text-slate-400 border-b border-slate-700/80">
@@ -386,8 +355,6 @@ export default function FinanceDashboard() {
               </tbody>
             </table>
           </div>
-
-          {/* Visualização Mobile (Cards) */}
           <div className="divide-y divide-slate-800/80 md:hidden">
             {transacoesFiltradas.length > 0 ? (
               transacoesFiltradas.map((t) => (

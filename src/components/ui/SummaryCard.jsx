@@ -15,7 +15,6 @@ export default function SummaryCard({ label, value, icon: Icon, tone = "neutral"
     <div
       className="
         group relative h-full min-w-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm select-none
-        /* Performance e Microinterações GPU */
         transition-all duration-200 ease-out
         hover:border-slate-300 hover:shadow-md
         motion-safe:hover:-translate-y-0.5

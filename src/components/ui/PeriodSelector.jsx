@@ -12,7 +12,6 @@ export default function PeriodSelector({ periods, selectedId, onChange }) {
             type="button"
             className={`
               min-h-11 shrink-0 snap-start rounded-xl border px-3.5 py-2 text-left select-none
-              /* Performance, Microinterações e Acessibilidade */
               transition-all duration-150 ease-out
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-800 focus-visible:ring-offset-2
               motion-safe:active:scale-[0.97]

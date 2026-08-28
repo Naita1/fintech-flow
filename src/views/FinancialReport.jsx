@@ -25,8 +25,6 @@ export default function FinancialReport({ weeks, quinzenas }) {
 
   return (
     <div className="space-y-5 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-300 motion-reduce:animate-none">
-      
-      {/* Cabeçalho e Seletor de Período */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h2 className="text-lg font-bold text-slate-800 tracking-tight truncate">Relatório financeiro</h2>
@@ -57,10 +55,8 @@ export default function FinancialReport({ weeks, quinzenas }) {
         </div>
       </div>
 
-      {/* Card do Relatório */}
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         
-        {/* Sub-cabeçalho com Resumo do Período */}
         <div className="flex flex-col gap-2 border-b border-dashed border-slate-200 p-4 sm:p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3 min-w-0">
             <div className="p-2.5 bg-slate-100 rounded-xl shrink-0">
@@ -78,7 +74,6 @@ export default function FinancialReport({ weeks, quinzenas }) {
           </span>
         </div>
 
-        {/* Visualização Desktop (Tabela Completa) */}
         <div className="hidden md:block overflow-x-auto scrolling-touch">
           <table className="w-full text-left text-sm">
             <thead>
@@ -122,7 +117,6 @@ export default function FinancialReport({ weeks, quinzenas }) {
           </table>
         </div>
 
-        {/* Visualização Mobile (Card List) */}
         <div className="divide-y divide-slate-100 md:hidden">
           {linhas.map((t) => (
             <div key={t.id} className="p-4 space-y-2.5 transition-colors duration-150 motion-safe:active:bg-slate-50">
@@ -150,7 +144,6 @@ export default function FinancialReport({ weeks, quinzenas }) {
             </div>
           ))}
 
-          {/* Totais do Período (Mobile) */}
           <div className="p-4 bg-slate-50 space-y-2 border-t border-slate-200">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Totais do período</p>
             <div className="flex justify-between items-center text-xs">

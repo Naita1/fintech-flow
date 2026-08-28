@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, LineChart, Line, PieChart, Pie, Cell,
@@ -11,7 +11,6 @@ import { totals, categoriaDist } from "../utils/calculations";
 import { fmtBRL } from "../utils/format";
 import { CATEGORIA_COR, EMERALD, ROSE } from "../constants/categories";
 
-// Estilização compartilhada de Tooltip com alta performance visual
 const tooltipStyle = {
   backgroundColor: "rgba(255, 255, 255, 0.95)",
   borderRadius: "12px",
@@ -24,44 +23,42 @@ const tooltipStyle = {
 
 export default function Dashboard({ weeks }) {
   const todas = weeks.flatMap((w) => w.transacoes);
-  const { entradas, saidas, saldo } = totals(todas);
+  const { entradas, saidas, saldo } = useMemo(() => totals(todas), [todas]);
 
-  const barData = weeks.map((w) => {
-    const t = totals(w.transacoes);
-    return { periodo: w.label, Entradas: t.entradas, Saídas: t.saidas };
-  });
+  const barData = useMemo(() => 
+    weeks.map((w) => {
+      const t = totals(w.transacoes);
+      return { periodo: w.label, Entradas: t.entradas, Saídas: t.saidas };
+    }), [weeks]);
 
-  const lineData = (() => {
+  const lineData = useMemo(() => {
     let acumulado = 0;
     return weeks.map((w) => {
       const t = totals(w.transacoes);
       acumulado += t.saldo;
       return { periodo: w.label, Saldo: acumulado };
     });
-  })();
+  }, [weeks]);
 
-  const pieData = categoriaDist(todas);
+  const pieData = useMemo(() => categoriaDist(todas), [todas]);
 
-  const comparacao = [
-    { periodo: "1ª Quinzena", ...(() => {
-        const t = totals(weeks[0].transacoes.concat(weeks[1].transacoes));
-        return { Entradas: t.entradas, Saídas: t.saidas, Saldo: t.saldo };
-      })() },
-    { periodo: "2ª Quinzena", ...(() => {
-        const t = totals(weeks[2].transacoes.concat(weeks[3].transacoes));
-        return { Entradas: t.entradas, Saídas: t.saidas, Saldo: t.saldo };
-      })() },
-  ];
+  const comparacao = useMemo(() => {
+    const primeiraQuinzenaTxs = weeks.slice(0, 2).flatMap(w => w.transacoes);
+    const segundaQuinzenaTxs = weeks.slice(2, 4).flatMap(w => w.transacoes);
+    const totaisQ1 = totals(primeiraQuinzenaTxs);
+    const totaisQ2 = totals(segundaQuinzenaTxs);
+
+    return [
+      { periodo: "1ª Quinzena", Entradas: totaisQ1.entradas, Saídas: totaisQ1.saidas, Saldo: totaisQ1.saldo },
+      { periodo: "2ª Quinzena", Entradas: totaisQ2.entradas, Saídas: totaisQ2.saidas, Saldo: totaisQ2.saldo },
+    ];
+  }, [weeks]);
 
   return (
     <div className="space-y-6 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-300 motion-reduce:animate-none">
-      
-      {/* Indicador de Lucro / Prejuízo */}
       <div className="w-full">
         <ProfitLossIndicator saldo={saldo} size="lg" />
       </div>
-
-      {/* Cards de Resumo KPI */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <SummaryCard label="Total de Entradas" value={fmtBRL(entradas)} icon={ArrowUpRight} tone="entrada" />
         <SummaryCard label="Total de Saídas" value={fmtBRL(saidas)} icon={ArrowDownRight} tone="saida" />
@@ -73,11 +70,8 @@ export default function Dashboard({ weeks }) {
         />
         <SummaryCard label="Saldo do Período" value={fmtBRL(saldo)} icon={Wallet} tone="saldo" />
       </div>
-
-      {/* Seção de Gráficos Otimizados */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        
-        {/* Gráfico 1: Entradas x Saídas */}
+      
         <ChartCard title="Entradas x Saídas" subtitle="Comparativo semanal do mês atual">
           <div className="w-full h-[260px] sm:h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -94,7 +88,6 @@ export default function Dashboard({ weeks }) {
           </div>
         </ChartCard>
 
-        {/* Gráfico 2: Evolução do Saldo */}
         <ChartCard title="Evolução do Saldo" subtitle="Saldo acumulado semana a semana">
           <div className="w-full h-[260px] sm:h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -116,8 +109,6 @@ export default function Dashboard({ weeks }) {
             </ResponsiveContainer>
           </div>
         </ChartCard>
-
-        {/* Gráfico 3: Distribuição dos Gastos */}
         <ChartCard title="Distribuição dos Gastos" subtitle="Saídas por categoria no mês">
           <div className="w-full h-[260px] sm:h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -142,7 +133,6 @@ export default function Dashboard({ weeks }) {
           </div>
         </ChartCard>
 
-        {/* Gráfico 4: Comparação entre Períodos */}
         <ChartCard title="Comparação entre Períodos" subtitle="1ª quinzena x 2ª quinzena">
           <div className="w-full h-[260px] sm:h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
