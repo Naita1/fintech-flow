@@ -7,7 +7,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-pool.on('error', (err, client) => {
+pool.on('error', (err) => {
   console.error('Erro inesperado em cliente ocioso do pool', err);
 });
 

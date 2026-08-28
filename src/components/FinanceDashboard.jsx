@@ -72,7 +72,7 @@ export default function FinanceDashboard() {
             <button
               type="button"
               onClick={() => setPeriodo('semanal')}
-              className={`flex min-h-[40px] items-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold select-none
+              className={`flex min-h-10 items-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold select-none
                 transition-all duration-150 ease-out
                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
                 motion-safe:active:scale-95 motion-reduce:transition-none ${
@@ -87,7 +87,7 @@ export default function FinanceDashboard() {
             <button
               type="button"
               onClick={() => setPeriodo('quinzenal')}
-              className={`flex min-h-[40px] items-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold select-none
+              className={`flex min-h-10 items-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold select-none
                 transition-all duration-150 ease-out
                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
                 motion-safe:active:scale-95 motion-reduce:transition-none ${
@@ -196,7 +196,7 @@ export default function FinanceDashboard() {
                   <button
                     type="button"
                     onClick={() => setTipo('entrada')}
-                    className={`min-h-[44px] py-2 px-3 text-xs sm:text-sm font-semibold rounded-xl border select-none
+                    className={`min-h-11 py-2 px-3 text-xs sm:text-sm font-semibold rounded-xl border select-none
                       transition-all duration-150 ease-out
                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500
                       motion-safe:active:scale-[0.98] motion-reduce:transition-none ${
@@ -210,7 +210,7 @@ export default function FinanceDashboard() {
                   <button
                     type="button"
                     onClick={() => setTipo('saida')}
-                    className={`min-h-[44px] py-2 px-3 text-xs sm:text-sm font-semibold rounded-xl border select-none
+                    className={`min-h-11 py-2 px-3 text-xs sm:text-sm font-semibold rounded-xl border select-none
                       transition-all duration-150 ease-out
                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500
                       motion-safe:active:scale-[0.98] motion-reduce:transition-none ${
@@ -227,7 +227,7 @@ export default function FinanceDashboard() {
               <button
                 type="submit"
                 disabled={!descricao || !valor}
-                className="w-full min-h-[44px] bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl text-xs sm:text-sm shadow-md shadow-blue-600/20 select-none
+                className="w-full min-h-11 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl text-xs sm:text-sm shadow-md shadow-blue-600/20 select-none
                   transition-all duration-150 ease-out mt-2
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900
                   motion-safe:active:scale-[0.98]
@@ -334,7 +334,7 @@ export default function FinanceDashboard() {
                         <button
                           type="button"
                           onClick={() => handleRemover(t.id)}
-                          className="inline-flex items-center justify-center min-h-[36px] min-w-[36px] rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 
+                          className="inline-flex items-center justify-center min-h-9 min-w-9 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 
                             transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500
                             motion-safe:active:scale-95"
                           title="Excluir lançamento"
@@ -384,7 +384,7 @@ export default function FinanceDashboard() {
                   <button
                     type="button"
                     onClick={() => handleRemover(t.id)}
-                    className="inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 
+                    className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 
                       transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500
                       motion-safe:active:scale-95"
                     title="Excluir lançamento"

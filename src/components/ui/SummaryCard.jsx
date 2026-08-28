@@ -1,4 +1,3 @@
-import React from "react";
 
 export default function SummaryCard({ label, value, icon: Icon, tone = "neutral" }) {
   const tones = {

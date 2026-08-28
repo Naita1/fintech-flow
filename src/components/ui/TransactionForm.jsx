@@ -1,4 +1,3 @@
-import React from "react";
 import { useState } from "react";
 import { X, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { CATEGORIAS_ENTRADA, CATEGORIAS_SAIDA } from "../../constants/categories";
@@ -42,7 +41,7 @@ export default function TransactionForm({ onClose, onSubmit }) {
             onClick={onClose}
             type="button"
             className="
-              inline-flex min-h-[36px] min-w-[36px] items-center justify-center rounded-full text-slate-400 
+              inline-flex min-h-9 min-w-9 items-center justify-center rounded-full text-slate-400 
               transition-colors duration-150 ease-out 
               hover:bg-slate-100 hover:text-slate-600 
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-800
@@ -63,7 +62,7 @@ export default function TransactionForm({ onClose, onSubmit }) {
                 type="button"
                 onClick={() => handleTipo("entrada")}
                 className={`
-                  flex min-h-[44px] items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold select-none
+                  flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold select-none
                   transition-all duration-150 ease-out
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500
                   motion-safe:active:scale-[0.98]
@@ -83,7 +82,7 @@ export default function TransactionForm({ onClose, onSubmit }) {
                 type="button"
                 onClick={() => handleTipo("saida")}
                 className={`
-                  flex min-h-[44px] items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold select-none
+                  flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold select-none
                   transition-all duration-150 ease-out
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500
                   motion-safe:active:scale-[0.98]
@@ -199,7 +198,7 @@ export default function TransactionForm({ onClose, onSubmit }) {
               type="button"
               onClick={onClose}
               className="
-                flex-1 min-h-[44px] rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 select-none
+                flex-1 min-h-11 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 select-none
                 transition-all duration-150 ease-out
                 hover:bg-slate-50 hover:border-slate-300
                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-800
@@ -213,7 +212,7 @@ export default function TransactionForm({ onClose, onSubmit }) {
               type="submit"
               disabled={!podeSalvar}
               className="
-                flex-1 min-h-[44px] rounded-xl bg-slate-800 py-2.5 text-sm font-semibold text-white shadow-sm select-none
+                flex-1 min-h-11 rounded-xl bg-slate-800 py-2.5 text-sm font-semibold text-white shadow-sm select-none
                 transition-all duration-150 ease-out
                 hover:bg-slate-900 hover:shadow
                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-800 focus-visible:ring-offset-2

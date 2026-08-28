@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Building2, ChevronDown } from "lucide-react";
 import CategoriaBadge from "../components/ui/CategoriaBadge";
 import { totals } from "../utils/calculations";
@@ -35,7 +35,7 @@ export default function FinancialReport({ weeks, quinzenas }) {
           <select
             value={selectedId}
             onChange={(e) => setSelectedId(e.target.value)}
-            className="w-full min-h-[44px] appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-3.5 pr-10 text-[16px] sm:text-sm font-medium text-slate-700 outline-none select-none
+            className="w-full min-h-11 appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-3.5 pr-10 text-[16px] sm:text-sm font-medium text-slate-700 outline-none select-none
               transition-all duration-150 ease-out
               hover:border-slate-300 hover:bg-slate-50/50
               focus:border-slate-400 focus:ring-2 focus:ring-slate-400/20 sm:w-64"

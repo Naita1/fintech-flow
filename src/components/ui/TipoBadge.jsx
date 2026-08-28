@@ -1,4 +1,3 @@
-import React from "react";
 import { ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 
 export default function TipoBadge({ tipo }) {

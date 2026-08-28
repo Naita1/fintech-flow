@@ -73,7 +73,7 @@ export default function Dashboard({ weeks }) {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       
         <ChartCard title="Entradas x Saídas" subtitle="Comparativo semanal do mês atual">
-          <div className="w-full h-[260px] sm:h-[280px]">
+          <div className="w-full h-65 sm:h-70">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -89,7 +89,7 @@ export default function Dashboard({ weeks }) {
         </ChartCard>
 
         <ChartCard title="Evolução do Saldo" subtitle="Saldo acumulado semana a semana">
-          <div className="w-full h-[260px] sm:h-[280px]">
+          <div className="w-full h-65 sm:h-70">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={lineData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -110,7 +110,7 @@ export default function Dashboard({ weeks }) {
           </div>
         </ChartCard>
         <ChartCard title="Distribuição dos Gastos" subtitle="Saídas por categoria no mês">
-          <div className="w-full h-[260px] sm:h-[280px]">
+          <div className="w-full h-65 sm:h-70">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                 <Pie 
@@ -134,7 +134,7 @@ export default function Dashboard({ weeks }) {
         </ChartCard>
 
         <ChartCard title="Comparação entre Períodos" subtitle="1ª quinzena x 2ª quinzena">
-          <div className="w-full h-[260px] sm:h-[280px]">
+          <div className="w-full h-65 sm:h-70">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={comparacao} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />

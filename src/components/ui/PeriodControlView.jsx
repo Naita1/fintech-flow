@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Plus, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import PeriodSelector from "./PeriodSelector";
 import SummaryCard from "./SummaryCard";

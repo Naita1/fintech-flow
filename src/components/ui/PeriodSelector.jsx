@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function PeriodSelector({ periods, selectedId, onChange }) {
   return (
     <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2 pt-1 scrolling-touch snap-x">

@@ -1,4 +1,3 @@
-import React from "react";
 import { LayoutDashboard, CalendarDays, CalendarRange, FileText, Wallet, X } from "lucide-react";
 
 export const NAV_ITEMS = [
@@ -19,7 +18,7 @@ function NavList({ active, onSelect }) {
             key={item.id}
             type="button"
             onClick={() => onSelect(item.id)}
-            className={`group relative flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold select-none
+            className={`group relative flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold select-none
               transition-all duration-150 ease-out
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500
               motion-safe:active:scale-[0.98] motion-reduce:transition-none ${
@@ -89,7 +88,7 @@ export function MobileDrawer({ open, active, onSelect, onClose }) {
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white
+            className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white
               transition-all duration-150 ease-out
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500
               motion-safe:active:scale-95 motion-reduce:transition-none"

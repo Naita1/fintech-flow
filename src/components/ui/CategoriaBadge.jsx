@@ -1,4 +1,3 @@
-import React from "react";
 import { CATEGORIA_COR } from "../../constants/categories";
 
 export default function CategoriaBadge({ categoria }) {
