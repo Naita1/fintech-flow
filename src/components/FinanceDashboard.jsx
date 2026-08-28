@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 
 export default function FinanceDashboard() {
-  const [periodo, setPeriodo] = useState('semanal'); // 'semanal' ou 'quinzenal'
+  const [periodo, setPeriodo] = useState('semanal');
     const [transacoes, setTransacoes] = useState([
     { id: 1, descricao: 'Venda de Serviços', valor: 3500.00, tipo: 'entrada', periodo: 'semanal', data: '2026-08-24' },
     { id: 2, descricao: 'Compra de Material', valor: 1200.00, tipo: 'saida', periodo: 'semanal', data: '2026-08-23' },
