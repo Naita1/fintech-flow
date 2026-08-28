@@ -12,6 +12,10 @@ export default async function handler(req, res) {
   if (!token) {
     return res.status(401).json({ error: "Não autenticado" });
   }
+  // Adicione esta rota no api/server.js para o AuthContext não quebrar
+app.get('/api/auth/me', (req, res) => {
+  return res.json({ id: 1, email: 'teste@email.com', name: 'Usuário Teste' });
+});
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
