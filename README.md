@@ -66,6 +66,15 @@ A organização de pastas segue um padrão lógico que separa as responsabilidad
 
 ---
 
+## 🔑 Acesso de Demonstração (Demo Login)
+
+Para testar a aplicação diretamente na interface sem precisar registrar um novo usuário, utilize as credenciais padrão abaixo:
+
+- **E-mail:** `teste@email.com`
+- **Senha:** `123456` (ou a senha cadastrada no seu banco)
+
+---
+
 ## 🚀 Como Executar o Projeto Localmente
 
 Siga os passos abaixo para configurar e rodar a aplicação no seu ambiente de desenvolvimento.
