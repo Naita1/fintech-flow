@@ -31,7 +31,18 @@ app.get('/api/transactions', async (req, res) => {
     const result = await pool.query(
       'SELECT * FROM transactions ORDER BY date DESC, id DESC'
     );
-    return res.json(result.rows);
+
+    const formattedRows = result.rows.map(tx => ({
+      ...tx,
+      tipo: tx.type === 'income' ? 'entrada' : tx.type === 'expense' ? 'saida' : tx.type,
+      type: tx.type === 'income' ? 'entrada' : tx.type === 'expense' ? 'saida' : tx.type,
+      frequencia: tx.frequency === 'weekly' ? 'semanal' : tx.frequency === 'biweekly' ? 'quinzenal' : tx.frequency,
+      descricao: tx.description,
+      valor: parseFloat(tx.amount),
+      data: tx.date
+    }));
+
+    return res.json(formattedRows);
   } catch (error) {
     console.error('Erro ao buscar transações:', error);
     return res.status(500).json({ error: 'Erro interno ao buscar movimentações' });
@@ -41,8 +52,36 @@ app.get('/api/transactions', async (req, res) => {
 app.post('/api/transactions', async (req, res) => {
   const { description, amount, type, category, frequency, date, user_id } = req.body;
 
-  if (!description || !amount || !type || !category || !frequency || !date) {
+  if (!description || amount === undefined || !type || !category || !frequency || !date) {
     return res.status(400).json({ error: 'Preencha todos os campos obrigatórios.' });
+  }
+
+  const typeMap = {
+    entrada: 'income',
+    receita: 'income',
+    income: 'income',
+    saida: 'expense',
+    saída: 'expense',
+    despesa: 'expense',
+    expense: 'expense'
+  };
+
+  const frequencyMap = {
+    semanal: 'weekly',
+    quinzenal: 'biweekly',
+    mensal: 'monthly',
+    weekly: 'weekly',
+    biweekly: 'biweekly',
+    monthly: 'monthly'
+  };
+
+  const dbType = typeMap[type?.toLowerCase()] || type;
+  const dbFrequency = frequencyMap[frequency?.toLowerCase()] || frequency;
+
+  let formattedDate = date;
+  if (typeof date === 'string' && date.includes('/')) {
+    const [day, month, year] = date.split('/');
+    formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
 
   try {
@@ -51,10 +90,22 @@ app.post('/api/transactions', async (req, res) => {
       VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *;
     `;
-    const values = [description, amount, type, category, frequency, date, user_id || null];
+    const values = [description, parseFloat(amount), dbType, category, dbFrequency, formattedDate, user_id || null];
 
     const result = await pool.query(query, values);
-    return res.json(result.rows[0]);
+    const newTx = result.rows[0];
+
+    const formattedTx = {
+      ...newTx,
+      tipo: newTx.type === 'income' ? 'entrada' : 'saida',
+      type: newTx.type === 'income' ? 'entrada' : 'saida',
+      frequencia: newTx.frequency === 'weekly' ? 'semanal' : newTx.frequency === 'biweekly' ? 'quinzenal' : 'mensal',
+      descricao: newTx.description,
+      valor: parseFloat(newTx.amount),
+      data: newTx.date
+    };
+
+    return res.status(201).json(formattedTx);
   } catch (error) {
     console.error('Erro ao salvar transação:', error);
     return res.status(500).json({ error: 'Erro interno ao salvar movimentação' });
