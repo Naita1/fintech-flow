@@ -55,13 +55,6 @@ export function Sidebar({ active, onSelect }) {
       </div>
 
       <NavList active={active} onSelect={onSelect} />
-
-      <div className="mt-auto rounded-xl border border-slate-800 bg-slate-950/40 p-3.5 shadow-inner">
-        <p className="text-xs font-semibold text-slate-300">Dados de demonstração</p>
-        <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
-          As informações exibidas são mockadas para fins de visualização do layout.
-        </p>
-      </div>
     </aside>
   );
 }

@@ -12,14 +12,40 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+const allowedOrigins = [
+  'http://localhost:5173',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Bloqueado pelas políticas de CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
-
 app.post('/api/auth/login', async (req, res) => {
-  const { email, password } = req.body;
-  console.log('Tentativa de login recebida:', email);
-  return res.json({ id: 1, email, name: 'Usuário' });
+  try {
+    const { email, password } = req.body;
+    console.log('Tentativa de login recebida para:', email);
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
+    }
+
+    return res.json({ id: 1, email, name: 'Usuário' });
+  } catch (error) {
+    console.error('Erro na rota /api/auth/login:', error);
+    return res.status(500).json({ error: 'Erro interno ao processar login.' });
+  }
 });
 
 app.get('/api/auth/me', (req, res) => {
