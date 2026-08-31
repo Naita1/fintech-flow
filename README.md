@@ -1,130 +1,375 @@
-# 💸 Fluxo Control - Portal de Gestão Financeira
+# 💸 fintech-flow
 
-Um portal Full-Stack para gestão de finanças pessoais ou empresariais, com dashboards analíticos e visões semanais/quinzenais. Este projeto foi construído como uma peça de portfólio para demonstrar competências em desenvolvimento web moderno com React e Node.js.
+O **fintech-flow** é uma aplicação web full-stack para gestão financeira pessoal e empresarial.
 
-<br/>
+O sistema permite o controle de movimentações financeiras, visualização por períodos semanais e quinzenais, dashboard com indicadores financeiros, autenticação de usuários e persistência de dados em PostgreSQL.
 
 ---
 
 ## ✨ Tecnologias Utilizadas
 
-Este projeto utiliza uma stack moderna e robusta, focada em performance e segurança.
+### Front-End
 
-![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge\&logo=react\&logoColor=black)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge\&logo=tailwindcss\&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge\&logo=vite\&logoColor=white)
 
----
+* **React**
+* **Tailwind CSS**
+* **Vite**
+* **Lucide React** — Iconografia
 
-## 🏛️ Arquitetura & Decisões Técnicas
+### Back-End
 
-A arquitetura foi pensada para ser escalável, segura e demonstrar boas práticas de desenvolvimento Full-Stack.
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge\&logo=nodedotjs\&logoColor=white)
+![Express](https://img.shields.io/badge/Express.js-000000?style=for-the-badge\&logo=express\&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge\&logo=postgresql\&logoColor=white)
 
-### 1. **Migração de Mock Data para Banco de Dados em Nuvem**
-O projeto evoluiu de uma fase inicial com dados mockados (`mockData.js`) para uma arquitetura persistente, utilizando um banco de dados **PostgreSQL** hospedado na **Neon**. Isso demonstra a capacidade de trabalhar com bancos de dados relacionais reais e gerenciar dados de produção.
-
-### 2. **Gerenciamento de Conexão com o Banco**
-A conexão com o PostgreSQL é gerenciada de forma resiliente através do `pg` Pool.
-- **Pool de Conexões**: Evita a sobrecarga de abrir e fechar conexões a cada requisição, melhorando a performance da API.
-- **Conexão Segura**: A configuração `ssl: { rejectUnauthorized: false }` está ativada para garantir a comunicação criptografada com o banco de dados em nuvem, uma prática essencial em produção.
-
-### 3. **Autenticação Segura com JWT**
-A segurança do usuário é uma prioridade. O sistema de autenticação foi implementado com as seguintes camadas de proteção:
-- **Hashing de Senhas**: As senhas dos usuários são armazenadas no banco de dados utilizando o algoritmo `bcrypt`, garantindo que mesmo em caso de vazamento, as senhas não sejam expostas.
-- **Tokens JWT em Cookies `HttpOnly`**: Após o login, um JSON Web Token (JWT) é gerado e armazenado em um cookie `HttpOnly`. Isso impede que o token seja acessado por scripts maliciosos no lado do cliente (ataques XSS), tornando a sessão muito mais segura do que o armazenamento em `localStorage`.
+* **Node.js**
+* **Express**
+* **PostgreSQL**
+* **Neon DB** — PostgreSQL Serverless
+* **pg** — Driver PostgreSQL para Node.js
+* **JWT** — Gerenciamento de sessões
+* **Bcrypt** — Hash seguro de senhas
 
 ---
 
-## 📁 Estrutura do Projeto
+## 🏛️ Arquitetura
 
-A organização de pastas segue um padrão lógico que separa as responsabilidades da aplicação.
-
-```
-/
-├── 📂 api/                  # Backend (Serverless Functions)
-│   ├── 📂 auth/             # Endpoints de autenticação
-│   │   ├── login.js
-│   │   ├── logout.js
-│   │   └── me.js
-│   └── _db.js               # Configuração do pool de conexão com o DB
+```text
+fintech-flow/
+├── api/                       # Back-end Node.js + Express
+│   ├── auth/                  # Controllers e rotas de autenticação
+│   ├── _db.js                 # Configuração do pool PostgreSQL
+│   └── server.js              # Servidor HTTP e rotas REST
 │
-├── 📂 scripts/              # Scripts utilitários
-│   └── seedUser.js          # Popula o DB com um usuário de teste
+├── scripts/                   # Scripts auxiliares
+│   ├── schema.sql             # Estrutura do banco de dados
+│   └── seedUser.js            # Inicialização do banco e usuário demo
 │
-├── 📂 src/                  # Frontend (React)
-│   ├── 📂 components/       # Componentes reutilizáveis (UI, layout)
-│   ├── 📂 context/          # Context API para estado global (ex: autenticação)
-│   ├── 📂 utils/            # Funções utilitárias (formatação, cálculos)
-│   └── 📂 views/            # Componentes de página (Dashboard, Relatórios)
+├── src/                       # Front-end React + Vite
+│   ├── components/            # Componentes reutilizáveis
+│   │   └── layout/            # Sidebar, Header e Shell
+│   ├── context/               # Context API
+│   ├── hooks/                 # Custom Hooks
+│   ├── utils/                 # Formatadores e cálculos
+│   └── views/                 # Telas da aplicação
 │
-├── .env.example             # Exemplo de variáveis de ambiente
-├── .gitignore               # Arquivos ignorados pelo Git
-└── README.md                # Documentação do projeto
+├── .env.example               # Exemplo de variáveis de ambiente
+├── .gitignore
+└── README.md
 ```
 
 ---
 
-## 🔑 Acesso de Demonstração (Demo Login)
+## 🏗️ Destaques de Engenharia
 
-Para testar a aplicação diretamente na interface sem precisar registrar um novo usuário, utilize as credenciais padrão abaixo:
+### 1. Mapeamento de Domínio (PT-BR ↔ EN)
 
-- **E-mail:** `teste@email.com`
-- **Senha:** `123456` (ou a senha cadastrada no seu banco)
+A interface trabalha com termos em Português, como:
+
+* `entrada`
+* `saída`
+* `semanal`
+* `quinzenal`
+
+Enquanto a API utiliza valores em Inglês para persistência no PostgreSQL:
+
+* `income`
+* `expense`
+* `weekly`
+* `biweekly`
+
+Essa camada de tradução mantém a experiência do usuário em Português sem comprometer a padronização dos dados no back-end.
 
 ---
 
-## 🚀 Como Executar o Projeto Localmente
+### 2. PostgreSQL Serverless com Neon DB
 
-Siga os passos abaixo para configurar e rodar a aplicação no seu ambiente de desenvolvimento.
+O projeto utiliza PostgreSQL hospedado através do **Neon DB**.
+
+O driver `pg` possui configuração de timeout para lidar com possíveis períodos de inicialização do banco serverless (*cold start*).
+
+```javascript
+connectionTimeoutMillis: 10000
+```
+
+---
+
+### 3. Autenticação Segura
+
+A aplicação utiliza:
+
+* **Bcrypt** para armazenamento seguro das senhas;
+* **JWT** para gerenciamento das sessões;
+* Cookies com flag **HttpOnly** para reduzir a exposição dos tokens no navegador.
+
+As credenciais e informações sensíveis são mantidas através de variáveis de ambiente.
+
+---
+
+### 4. Banco Reproduzível
+
+A estrutura do banco de dados está versionada no repositório através do arquivo:
+
+```text
+scripts/schema.sql
+```
+
+Isso permite que qualquer pessoa que clone o projeto consiga recriar a estrutura necessária do PostgreSQL sem depender de uma cópia pré-existente do banco.
+
+O script cria automaticamente as tabelas necessárias e suas respectivas restrições.
+
+---
+
+### 5. Layout Responsivo
+
+A interface foi desenvolvida para diferentes tamanhos de tela.
+
+Em telas maiores, as movimentações são apresentadas através de uma tabela financeira interativa.
+
+Em dispositivos menores, os dados são adaptados para uma visualização em cartões, proporcionando uma experiência mais adequada para dispositivos móveis.
+
+---
+
+## 🚀 Funcionalidades
+
+* [x] **Autenticação de usuários**
+* [x] Login com senha protegida por Bcrypt
+* [x] Sessão utilizando JWT
+* [x] Cookies HttpOnly
+* [x] **CRUD de movimentações financeiras**
+* [x] Cadastro de entradas
+* [x] Cadastro de saídas
+* [x] Exclusão de movimentações
+* [x] Listagem de movimentações
+* [x] **Visualização por períodos**
+* [x] Período semanal
+* [x] Período quinzenal
+* [x] **Dashboard financeiro**
+* [x] Total de entradas
+* [x] Total de saídas
+* [x] Cálculo de saldo líquido
+* [x] Formatação de valores em Real Brasileiro
+* [x] Interface responsiva
+
+---
+
+## 🔑 Acesso à Demonstração
+
+A aplicação possui uma conta pública destinada exclusivamente para demonstração.
+
+### Usuário de Teste
+
+**E-mail:**
+
+```text
+teste@email.com
+```
+
+**Senha:**
+
+```text
+123456
+```
+
+Essa conta pode ser utilizada para explorar as funcionalidades da aplicação publicada.
+
+### 🌐 Aplicação em Produção
+
+> Substitua o endereço abaixo pela URL gerada pela Vercel após o deploy.
+
+```text
+https://seu-projeto.vercel.app
+```
+
+---
+
+## 💻 Como Rodar o Projeto Localmente
 
 ### Pré-requisitos
-- Node.js (versão 18 ou superior)
-- npm ou pnpm
-- Um banco de dados PostgreSQL (você pode criar uma conta gratuita na Neon)
 
-### Passos
+Antes de iniciar, certifique-se de possuir:
 
-1. **Clone o repositório:**
-   ```bash
-   git clone https://github.com/seu-usuario/fluxo-control.git
-   cd fluxo-control
-   ```
-
-2. **Instale as dependências:**
-   ```bash
-   npm install
-   ```
-
-3. **Configure as variáveis de ambiente:**
-   - Crie um arquivo `.env` na raiz do projeto, copiando o conteúdo de `.env.example`.
-   - Preencha as variáveis com suas credenciais:
-     ```env
-     # String de conexão do seu banco de dados PostgreSQL (Neon)
-     DATABASE_URL="postgres://user:password@host:port/dbname?sslmode=require"
-
-     # Chave secreta para assinar os tokens JWT (pode ser qualquer string segura)
-     JWT_SECRET="SUA_CHAVE_SECRETA_AQUI"
-     ```
-
-4. **Popule o banco de dados:**
-   - Rode o script de *seed* para criar as tabelas e o usuário de teste (`teste@email.com` / `123456`).
-   ```bash
-   node scripts/seedUser.js
-   ```
-
-5. **Inicie o servidor de desenvolvimento:**
-   ```bash
-   npm run dev
-   ```
-
-A aplicação estará disponível em `http://localhost:5173`.
+* [Node.js](https://nodejs.org/) 18 ou superior
+* npm ou pnpm
+* PostgreSQL local ou uma conta no Neon DB
 
 ---
 
-## 🗺️ Próximos Passos (Roadmap)
+### 1. Clonar o repositório
 
-- [ ] **Integração Completa da Autenticação no Front-End**: Conectar os formulários de login/cadastro e proteger as rotas privadas.
-- [ ] **Implementação do CRUD de Movimentações**: Criar a API e a interface para adicionar, editar e excluir transações financeiras, persistindo os dados no banco.
+```bash
+git clone https://github.com/seu-usuario/fintech-flow.git
+cd fintech-flow
+```
 
+---
+
+### 2. Instalar as dependências
+
+```bash
+npm install
+```
+
+---
+
+### 3. Configurar as Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto.
+
+Exemplo:
+
+```env
+DATABASE_URL="postgresql://usuario:senha@host.neon.tech/neondb?sslmode=verify-full"
+JWT_SECRET="sua_chave_secreta_aqui"
+PORT=3000
+```
+
+> ⚠️ **Nunca envie o arquivo `.env` para o GitHub.**
+>
+> As credenciais reais do banco e a chave JWT devem permanecer protegidas como variáveis de ambiente.
+
+---
+
+### 4. Criar a Estrutura do Banco e Usuário Demo
+
+Execute:
+
+```bash
+node scripts/seedUser.js
+```
+
+O script irá:
+
+1. Ler o arquivo `scripts/schema.sql`;
+2. Criar as tabelas necessárias;
+3. Configurar as restrições do banco;
+4. Criar o usuário de demonstração;
+5. Evitar a criação duplicada do usuário caso o comando seja executado novamente.
+
+O schema também pode ser executado manualmente através de ferramentas como **DBeaver**, **pgAdmin** ou pelo console do **Neon DB**.
+
+---
+
+### 5. Iniciar o Back-End
+
+```bash
+node api/server.js
+```
+
+O servidor será iniciado na porta configurada no arquivo `.env`.
+
+---
+
+### 6. Iniciar o Front-End
+
+Abra um segundo terminal e execute:
+
+```bash
+npm run dev
+```
+
+O Vite disponibilizará a aplicação normalmente em:
+
+```text
+http://localhost:5173
+```
+
+---
+
+## 🗄️ Estrutura do Banco de Dados
+
+### `users`
+
+Armazena os usuários cadastrados na aplicação.
+
+| Campo           | Tipo      | Descrição                |
+| --------------- | --------- | ------------------------ |
+| `id`            | SERIAL    | Identificador único      |
+| `name`          | VARCHAR   | Nome do usuário          |
+| `email`         | VARCHAR   | E-mail único             |
+| `password_hash` | VARCHAR   | Senha armazenada em hash |
+| `created_at`    | TIMESTAMP | Data de criação          |
+
+### `transactions`
+
+Armazena as movimentações financeiras.
+
+| Campo         | Tipo      | Descrição                 |
+| ------------- | --------- | ------------------------- |
+| `id`          | SERIAL    | Identificador único       |
+| `user_id`     | INT       | Usuário proprietário      |
+| `description` | VARCHAR   | Descrição da movimentação |
+| `amount`      | NUMERIC   | Valor da movimentação     |
+| `type`        | VARCHAR   | `income` ou `expense`     |
+| `period_type` | VARCHAR   | `weekly` ou `biweekly`    |
+| `period_id`   | VARCHAR   | Identificador do período  |
+| `date`        | DATE      | Data da movimentação      |
+| `created_at`  | TIMESTAMP | Data de criação           |
+
+A relação entre `users` e `transactions` utiliza uma chave estrangeira com exclusão em cascata:
+
+```text
+users
+  │
+  └── transactions
+```
+
+Quando um usuário é removido, suas respectivas movimentações também são removidas.
+
+---
+
+## 🔐 Variáveis de Ambiente
+
+| Variável       | Descrição                                      |
+| -------------- | ---------------------------------------------- |
+| `DATABASE_URL` | URL de conexão com o PostgreSQL                |
+| `JWT_SECRET`   | Chave utilizada para assinatura dos tokens JWT |
+| `PORT`         | Porta utilizada pelo servidor                  |
+
+> Em produção, configure essas variáveis diretamente no ambiente de hospedagem, como a Vercel. Não coloque valores reais no código-fonte.
+
+---
+
+## ☁️ Deploy
+
+O projeto pode ser publicado utilizando:
+
+* **Vercel** para hospedagem da aplicação;
+* **Neon DB** para o banco PostgreSQL.
+
+Para produção, configure as seguintes variáveis no ambiente da Vercel:
+
+```text
+DATABASE_URL
+JWT_SECRET
+PORT
+```
+
+A conta de demonstração pode ser utilizada pelos visitantes para testar a aplicação publicada.
+
+---
+
+## 📁 Banco de Dados Local
+
+Caso seja utilizado um PostgreSQL local, configure a variável:
+
+```env
+DATABASE_URL="postgresql://usuario:senha@localhost:5432/fintech_flow"
+```
+
+Depois execute:
+
+```bash
+node scripts/seedUser.js
+```
+
+O script será responsável por criar a estrutura necessária e cadastrar o usuário de demonstração.
+
+---
+
+## 📝 Licença
+
+Este projeto está sob a licença [MIT](LICENSE).
