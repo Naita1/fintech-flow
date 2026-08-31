@@ -6,21 +6,29 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Método não permitido" });
   }
 
-  const cookies = cookie.parse(req.headers.cookie || "");
-  const token = cookies.session;
-
-  if (!token) {
-    return res.status(401).json({ error: "Não autenticado" });
-  }
-
-  app.get('/api/auth/me', (req, res) => {
-  return res.json({ id: 1, email: 'teste@email.com', name: 'Usuário Teste' });
-});
-
   try {
+    const cookies = cookie.parse(req.headers.cookie || "");
+    let token = cookies.session;
+
+    if (!token && req.headers.authorization) {
+      const parts = req.headers.authorization.split(" ");
+      if (parts.length === 2 && parts[0] === "Bearer") {
+        token = parts[1];
+      }
+    }
+
+    if (!token) {
+      return res.status(401).json({ error: "Não autenticado" });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return res.status(200).json({ id: decoded.id, name: decoded.name, email: decoded.email });
+    return res.status(200).json({
+      id: decoded.id,
+      name: decoded.name,
+      email: decoded.email,
+    });
   } catch (err) {
+    console.error("Erro na validação do token:", err.message);
     return res.status(401).json({ error: "Sessão inválida ou expirada" });
   }
 }
