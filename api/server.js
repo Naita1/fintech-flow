@@ -112,6 +112,25 @@ app.post('/api/transactions', async (req, res) => {
   }
 });
 
+app.delete('/api/transactions/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const query = 'DELETE FROM transactions WHERE id = $1 RETURNING *;';
+    const result = await pool.query(query, [id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Transação não encontrada.' });
+    }
+
+    console.log(`Transação ID ${id} excluída com sucesso.`);
+    return res.status(200).json({ message: 'Transação excluída com sucesso.', deleted: result.rows[0] });
+  } catch (error) {
+    console.error('Erro ao excluir transação:', error);
+    return res.status(500).json({ error: 'Erro interno ao excluir movimentação.' });
+  }
+});
+
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+  console.log(`Servidor rodando na porta ${PORT}`);
 });

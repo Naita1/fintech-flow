@@ -28,15 +28,25 @@ export function useTransactions() {
     fetchTransactions();
   }, [fetchTransactions]);
 
-  const addTransaction = useCallback(async (transactionData) => {
+  const addTransaction = useCallback(async (arg1, arg2) => {
     setError(null);
+    const rawData = arg2 ? arg2 : arg1;
+
+    const payload = {
+      description: rawData.descricao || rawData.description,
+      amount: parseFloat(rawData.valor || rawData.amount),
+      type: rawData.tipo || rawData.type || 'saida',
+      category: rawData.categoria || rawData.category || 'Outros',
+      frequency: rawData.frequencia || rawData.frequency || 'semanal',
+      date: rawData.data || rawData.date || new Date().toISOString().split('T')[0],
+      observation: rawData.observacao || rawData.observation || null,
+    };
+
     try {
       const response = await fetch('/api/transactions', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(transactionData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -44,13 +54,30 @@ export function useTransactions() {
         throw new Error(errorData.error || 'Falha ao adicionar a movimentação.');
       }
 
-      const newTransaction = await response.json();
-      setTransactions(prev => [newTransaction, ...prev]);
-      
-      return newTransaction;
+      await fetchTransactions();
     } catch (err) {
       setError(err.message);
-      console.error(err);
+      console.error('Erro ao adicionar transação:', err);
+      throw err;
+    }
+  }, [fetchTransactions]);
+
+  const deleteTransaction = useCallback(async (id) => {
+    setError(null);
+    try {
+      const response = await fetch(`/api/transactions/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Falha ao excluir a movimentação.');
+      }
+
+      setTransactions(prev => prev.filter(tx => tx.id !== id));
+    } catch (err) {
+      setError(err.message);
+      console.error('Erro ao excluir transação:', err);
       throw err;
     }
   }, []);
@@ -64,6 +91,7 @@ export function useTransactions() {
     quinzenas, 
     loading, 
     error, 
-    addTransaction 
+    addTransaction,
+    deleteTransaction 
   };
 }

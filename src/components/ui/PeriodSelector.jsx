@@ -1,11 +1,11 @@
-export default function PeriodSelector({ periods, selectedId, onChange }) {
+export default function PeriodSelector({ periods = [], selectedId, onChange }) {
   return (
     <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2 pt-1 scrolling-touch snap-x">
-      {periods.map((p) => {
+      {periods.map((p, index) => {
         const isSelected = p.id === selectedId;
         return (
           <button
-            key={p.id}
+            key={p.id || p.label || index}
             onClick={() => onChange(p.id)}
             type="button"
             className={`

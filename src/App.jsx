@@ -19,7 +19,16 @@ const TITLE_MAP = {
 
 export default function App() {
   const { user, loading: authLoading, logout } = useAuth();
-  const { weeks, quinzenas, loading: txLoading, error, addTransaction } = useTransactions();
+  
+  const { 
+    weeks, 
+    quinzenas, 
+    loading: txLoading, 
+    error, 
+    addTransaction, 
+    deleteTransaction 
+  } = useTransactions();
+  
   const [view, setView] = useState("dashboard");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
@@ -69,13 +78,22 @@ export default function App() {
         />
 
         <main className="flex-1 p-4 sm:p-6">
-          {view === "dashboard" && <Dashboard weeks={weeks} />}
+          {view === "dashboard" && <Dashboard weeks={weeks} />} 
           {view === "semanal" && (
-            <WeeklyFinance weeks={weeks} onAddTransaction={addTransaction} />
+            <WeeklyFinance 
+              weeks={weeks} 
+              onAddTransaction={addTransaction} 
+              onDeleteTransaction={deleteTransaction}
+            />
           )}
           {view === "quinzenal" && (
-            <BiweeklyFinance quinzenas={quinzenas} onAddTransaction={addTransaction} />
+            <BiweeklyFinance 
+              quinzenas={quinzenas} 
+              onAddTransaction={addTransaction} 
+              onDeleteTransaction={deleteTransaction}
+            />
           )}
+
           {view === "relatorio" && (
             <FinancialReport weeks={weeks} quinzenas={quinzenas} />
           )}
