@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { groupTransactionsByWeek, groupTransactionsByBiweekly } from '../utils/periods';
 
+const API_URL = import.meta.env.VITE_API_URL || '';
+
 export function useTransactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,7 +12,7 @@ export function useTransactions() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/transactions');
+      const response = await fetch(`${API_URL}/api/transactions`);
       if (!response.ok) {
         throw new Error('Falha ao buscar as movimentações da API.');
       }
@@ -43,7 +45,7 @@ export function useTransactions() {
     };
 
     try {
-      const response = await fetch('/api/transactions', {
+      const response = await fetch(`${API_URL}/api/transactions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -65,7 +67,7 @@ export function useTransactions() {
   const deleteTransaction = useCallback(async (id) => {
     setError(null);
     try {
-      const response = await fetch(`/api/transactions/${id}`, {
+      const response = await fetch(`${API_URL}/api/transactions/${id}`, {
         method: 'DELETE',
       });
 
