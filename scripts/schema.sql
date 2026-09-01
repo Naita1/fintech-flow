@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     category VARCHAR(50) NOT NULL,
     frequency VARCHAR(20) CHECK (frequency IN ('weekly', 'biweekly', 'monthly')) NOT NULL,
     date DATE NOT NULL,
+    observation TEXT,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

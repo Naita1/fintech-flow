@@ -1,4 +1,3 @@
-import React from "react";
 import { Trash2 } from "lucide-react";
 import { fmtBRL } from "../../utils/format";
 import TipoBadge from "./TipoBadge";

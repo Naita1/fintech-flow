@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { useTransactions } from "./hooks/useTransactions";
 import LoginPage from "./views/LoginPage";
@@ -11,10 +12,10 @@ import FinancialReport from "./views/FinancialReport";
 import "./index.css";
 
 const TITLE_MAP = {
-  dashboard: "Dashboard Financeiro",
-  semanal: "Financeiro Semanal",
-  quinzenal: "Financeiro Quinzenal",
-  relatorio: "Relatório Financeiro",
+  "/": "Dashboard Financeiro",
+  "/semanal": "Financeiro Semanal",
+  "/quinzenal": "Financeiro Quinzenal",
+  "/relatorio": "Relatório Financeiro",
 };
 
 export default function App() {
@@ -29,8 +30,9 @@ export default function App() {
     deleteTransaction 
   } = useTransactions();
   
-  const [view, setView] = useState("dashboard");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   if (authLoading || (user && txLoading)) {
     return (
@@ -61,42 +63,49 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen w-full bg-slate-50">
-      <Sidebar active={view} onSelect={setView} />
+      <Sidebar active={currentPath} />
       <MobileDrawer
         open={mobileNavOpen}
-        active={view}
-        onSelect={setView}
+        active={currentPath}
         onClose={() => setMobileNavOpen(false)}
       />
 
       <div className="flex min-h-screen flex-1 flex-col">
         <Header 
-          title={TITLE_MAP[view]} 
+          title={TITLE_MAP[currentPath] || "FintechFlow"} 
           onMenuClick={() => setMobileNavOpen(true)}
           user={user}
           onLogout={logout}
         />
 
         <main className="flex-1 p-4 sm:p-6">
-          {view === "dashboard" && <Dashboard weeks={weeks} />} 
-          {view === "semanal" && (
-            <WeeklyFinance 
-              weeks={weeks} 
-              onAddTransaction={addTransaction} 
-              onDeleteTransaction={deleteTransaction}
+          <Routes>
+            <Route path="/" element={<Dashboard weeks={weeks} />} />
+            <Route
+              path="/semanal"
+              element={
+                <WeeklyFinance
+                  weeks={weeks}
+                  onAddTransaction={addTransaction}
+                  onDeleteTransaction={deleteTransaction}
+                />
+              }
             />
-          )}
-          {view === "quinzenal" && (
-            <BiweeklyFinance 
-              quinzenas={quinzenas} 
-              onAddTransaction={addTransaction} 
-              onDeleteTransaction={deleteTransaction}
+            <Route
+              path="/quinzenal"
+              element={
+                <BiweeklyFinance
+                  quinzenas={quinzenas}
+                  onAddTransaction={addTransaction}
+                  onDeleteTransaction={deleteTransaction}
+                />
+              }
             />
-          )}
-
-          {view === "relatorio" && (
-            <FinancialReport weeks={weeks} quinzenas={quinzenas} />
-          )}
+            <Route
+              path="/relatorio"
+              element={<FinancialReport weeks={weeks} quinzenas={quinzenas} />}
+            />
+          </Routes>
         </main>
       </div>
     </div>

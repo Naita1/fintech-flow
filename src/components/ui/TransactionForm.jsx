@@ -164,11 +164,8 @@ export default function TransactionForm({ onClose, onSubmit }) {
             </label>
             <input
               type="date"
-              onChange={(e) => {
-                if (!e.target.value) return setData("");
-                const [y, m, d] = e.target.value.split("-");
-                setData(`${d}/${m}/${y}`);
-              }}
+              value={data}
+              onChange={(e) => setData(e.target.value)}
               className="
                 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-[16px] text-slate-700 outline-none sm:text-sm bg-white
                 transition-all duration-150 ease-out

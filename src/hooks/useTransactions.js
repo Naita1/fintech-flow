@@ -12,7 +12,14 @@ export function useTransactions() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_URL}/api/transactions`);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      const response = await fetch(`${API_URL}/api/transactions`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (!response.ok) {
         throw new Error('Falha ao buscar as movimentações da API.');
       }
@@ -45,9 +52,15 @@ export function useTransactions() {
     };
 
     try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Usuário não autenticado.');
+
       const response = await fetch(`${API_URL}/api/transactions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(payload),
       });
 
@@ -67,8 +80,14 @@ export function useTransactions() {
   const deleteTransaction = useCallback(async (id) => {
     setError(null);
     try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Usuário não autenticado.');
+
       const response = await fetch(`${API_URL}/api/transactions/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       if (!response.ok) {
