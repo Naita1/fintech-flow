@@ -3,7 +3,7 @@ import { groupTransactionsByWeek, groupTransactionsByBiweekly } from '../utils/p
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
-export function useTransactions() {
+export function useTransactions(frequency) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,7 +17,13 @@ export function useTransactions() {
         setLoading(false);
         return;
       }
-      const response = await fetch(`${API_URL}/api/transactions`, {
+
+      const url = new URL(`${API_URL}/api/transactions`);
+      if (frequency) {
+        url.searchParams.append('frequency', frequency);
+      }
+
+      const response = await fetch(url.toString(), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!response.ok) {
@@ -31,22 +37,21 @@ export function useTransactions() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [frequency]);
 
   useEffect(() => {
     fetchTransactions();
   }, [fetchTransactions]);
 
-  const addTransaction = useCallback(async (arg1, arg2) => {
+  const addTransaction = useCallback(async (rawData) => {
     setError(null);
-    const rawData = arg2 ? arg2 : arg1;
 
     const payload = {
       description: rawData.descricao || rawData.description,
       amount: parseFloat(rawData.valor || rawData.amount),
       type: rawData.tipo || rawData.type || 'saida',
       category: rawData.categoria || rawData.category || 'Outros',
-      frequency: rawData.frequencia || rawData.frequency || 'semanal',
+      frequency: frequency, 
       date: rawData.data || rawData.date || new Date().toISOString().split('T')[0],
       observation: rawData.observacao || rawData.observation || null,
     };
@@ -75,7 +80,46 @@ export function useTransactions() {
       console.error('Erro ao adicionar transação:', err);
       throw err;
     }
-  }, [fetchTransactions]);
+  }, [fetchTransactions, frequency]);
+
+  const updateTransaction = useCallback(async (id, rawData) => {
+    setError(null);
+    
+    const payload = {
+      description: rawData.descricao || rawData.description,
+      amount: parseFloat(rawData.valor || rawData.amount),
+      type: rawData.tipo || rawData.type,
+      category: rawData.categoria || rawData.category,
+      frequency: rawData.frequencia || rawData.frequency || frequency,
+      date: rawData.data || rawData.date,
+      observation: rawData.observacao || rawData.observation || null,
+    };
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Usuário não autenticado.');
+
+      const response = await fetch(`${API_URL}/api/transactions/${id}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Falha ao atualizar a movimentação.');
+      }
+
+      await fetchTransactions();
+    } catch (err) {
+      setError(err.message);
+      console.error('Erro ao atualizar transação:', err);
+      throw err;
+    }
+  }, [fetchTransactions, frequency]);
 
   const deleteTransaction = useCallback(async (id) => {
     setError(null);
@@ -113,6 +157,7 @@ export function useTransactions() {
     loading, 
     error, 
     addTransaction,
+    updateTransaction,
     deleteTransaction 
   };
 }

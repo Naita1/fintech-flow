@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Plus } from "lucide-react";
 import PeriodSelector from "./PeriodSelector";
 import SummaryCard from "./SummaryCard";
 import ProfitLossIndicator from "./ProfitLossIndicator";
@@ -45,7 +45,24 @@ export default function PeriodControlView({
       </div>
 
       <div className="space-y-2.5">
-        <h3 className="text-sm font-semibold text-slate-600">Movimentações {tipoRotulo}</h3>
+        <div className="flex items-center justify-between gap-4">
+          <h3 className="text-sm font-semibold text-slate-600">Movimentações {tipoRotulo}</h3>
+          <button
+            type="button"
+            onClick={() => setShowForm(true)}
+            className="
+              inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm select-none
+              transition-all duration-150 ease-out
+              hover:bg-emerald-600
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2
+              motion-safe:active:scale-[0.98]
+            "
+          >
+            <Plus size={16} className="-ml-0.5" />
+            <span className="hidden sm:inline">Nova Movimentação</span>
+            <span className="sm:hidden">Nova</span>
+          </button>
+        </div>
         <FinancialTable
           transacoes={transacoes}
           onDeleteTransaction={onDeleteTransaction}
@@ -56,7 +73,7 @@ export default function PeriodControlView({
         <TransactionForm
           onClose={() => setShowForm(false)}
           onSubmit={(novaTx) => {
-            onAddTransaction(activePeriod?.id || selectedPeriodId, novaTx);
+            onAddTransaction(novaTx);
             setShowForm(false);
           }}
         />

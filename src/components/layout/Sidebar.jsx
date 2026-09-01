@@ -1,47 +1,52 @@
 import { LayoutDashboard, CalendarDays, CalendarRange, FileText, Wallet, X } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 export const NAV_ITEMS = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "semanal", label: "Financeiro Semanal", icon: CalendarDays },
-  { id: "quinzenal", label: "Financeiro Quinzenal", icon: CalendarRange },
-  { id: "relatorio", label: "Relatório", icon: FileText },
+  { id: "dashboard", path: "/", label: "Dashboard", icon: LayoutDashboard },
+  { id: "semanal", path: "/semanal", label: "Financeiro Semanal", icon: CalendarDays },
+  { id: "quinzenal", path: "/quinzenal", label: "Financeiro Quinzenal", icon: CalendarRange },
+  { id: "relatorio", path: "/relatorio", label: "Relatório", icon: FileText },
 ];
 
-function NavList({ active, onSelect }) {
+function NavList({ onItemClick }) {
   return (
     <nav className="space-y-1.5" aria-label="Navegação principal">
       {NAV_ITEMS.map((item) => {
         const Icon = item.icon;
-        const isActive = active === item.id;
         return (
-          <button
+          <NavLink
             key={item.id}
-            type="button"
-            onClick={() => onSelect(item.id)}
-            className={`group relative flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold select-none
+            to={item.path}
+            onClick={onItemClick}
+            className={({ isActive }) => `group relative flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold select-none
               transition-all duration-150 ease-out
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500
               motion-safe:active:scale-[0.98] motion-reduce:transition-none ${
               isActive
                 ? "bg-emerald-500/10 text-emerald-400 shadow-sm"
                 : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 motion-safe:hover:translate-x-0.5"
-            }`}
+            }`
+          }
           >
-            <span
-              className={`h-5 w-1 rounded-full transition-all duration-200 ease-out ${
-                isActive ? "bg-emerald-400 opacity-100 scale-y-100" : "bg-transparent opacity-0 scale-y-50"
-              }`}
-            />
-            <Icon size={18} className={`shrink-0 transition-transform duration-200 ease-out ${isActive ? "text-emerald-400" : "text-slate-400 group-hover:text-slate-200"}`} />
-            <span className="truncate">{item.label}</span>
-          </button>
+            {({ isActive }) => (
+              <>
+                <span
+                  className={`h-5 w-1 rounded-full transition-all duration-200 ease-out ${
+                    isActive ? "bg-emerald-400 opacity-100 scale-y-100" : "bg-transparent opacity-0 scale-y-50"
+                  }`}
+                />
+                <Icon size={18} className={`shrink-0 transition-transform duration-200 ease-out ${isActive ? "text-emerald-400" : "text-slate-400 group-hover:text-slate-200"}`} />
+                <span className="truncate">{item.label}</span>
+              </>
+            )}
+          </NavLink>
         );
       })}
     </nav>
   );
 }
 
-export function Sidebar({ active, onSelect }) {
+export function Sidebar() {
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-slate-800/80 bg-slate-900 px-4 py-6 md:flex select-none">
       <div className="mb-8 flex items-center gap-3 px-2">
@@ -54,12 +59,12 @@ export function Sidebar({ active, onSelect }) {
         </div>
       </div>
 
-      <NavList active={active} onSelect={onSelect} />
+      <NavList />
     </aside>
   );
 }
 
-export function MobileDrawer({ open, active, onSelect, onClose }) {
+export function MobileDrawer({ open, onClose }) {
   if (!open) return null;
 
   return (
@@ -91,13 +96,7 @@ export function MobileDrawer({ open, active, onSelect, onClose }) {
           </button>
         </div>
 
-        <NavList
-          active={active}
-          onSelect={(id) => {
-            onSelect(id);
-            onClose();
-          }}
-        />
+        <NavList onItemClick={onClose} />
 
         <div className="mt-auto rounded-xl border border-slate-800 bg-slate-950/40 p-3.5">
           <p className="text-xs font-semibold text-slate-300">Dados de demonstração</p>

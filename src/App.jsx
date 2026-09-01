@@ -20,6 +20,10 @@ const TITLE_MAP = {
 
 export default function App() {
   const { user, loading: authLoading, logout } = useAuth();
+  const location = useLocation();
+  const currentPath = location.pathname;
+  
+  const frequency = currentPath === '/' ? null : currentPath.substring(1);
   
   const { 
     weeks, 
@@ -28,11 +32,9 @@ export default function App() {
     error, 
     addTransaction, 
     deleteTransaction 
-  } = useTransactions();
+  } = useTransactions(frequency);
   
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const location = useLocation();
-  const currentPath = location.pathname;
 
   if (authLoading || (user && txLoading)) {
     return (
@@ -63,10 +65,9 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen w-full bg-slate-50">
-      <Sidebar active={currentPath} />
+      <Sidebar />
       <MobileDrawer
         open={mobileNavOpen}
-        active={currentPath}
         onClose={() => setMobileNavOpen(false)}
       />
 
