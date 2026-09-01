@@ -2,7 +2,7 @@ import * as transactionService from '../services/transactionService.js';
 
 export async function getTransactions(req, res, next) {
   try {
-    const transactions = await transactionService.getAllTransactions(req.user.id);
+    const transactions = await transactionService.getAllTransactions(req.user.id, req.query);
     res.status(200).json(transactions);
   } catch (error) {
     next(error);
@@ -13,6 +13,19 @@ export async function addTransaction(req, res, next) {
   try {
     const newTransaction = await transactionService.createTransaction(req.user.id, req.body);
     res.status(201).json(newTransaction);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateTransaction(req, res, next) {
+  try {
+    const updatedTransaction = await transactionService.updateTransaction(
+      req.user.id,
+      req.params.id,
+      req.body
+    );
+    res.status(200).json(updatedTransaction);
   } catch (error) {
     next(error);
   }

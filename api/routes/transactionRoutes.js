@@ -8,6 +8,7 @@ router.route('/')
   .post(transactionController.addTransaction);
 
 router.route('/:id')
+  .put(transactionController.updateTransaction)
   .delete(transactionController.removeTransaction);
 
 export default router;
