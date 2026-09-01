@@ -12,23 +12,22 @@ export function useTransactions(frequency) {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
       const url = new URL(`${API_URL}/api/transactions`);
       if (frequency) {
         url.searchParams.append('frequency', frequency);
       }
 
       const response = await fetch(url.toString(), {
-        headers: { 'Authorization': `Bearer ${token}` }
+        credentials: 'include'
       });
+
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Sessão expirada ou não autorizada.');
+        }
         throw new Error('Falha ao buscar as movimentações da API.');
       }
+
       const data = await response.json();
       setTransactions(data.sort((a, b) => new Date(b.date) - new Date(a.date)));
     } catch (err) {
@@ -57,15 +56,12 @@ export function useTransactions(frequency) {
     };
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('Usuário não autenticado.');
-
       const response = await fetch(`${API_URL}/api/transactions`, {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
@@ -96,15 +92,12 @@ export function useTransactions(frequency) {
     };
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('Usuário não autenticado.');
-
       const response = await fetch(`${API_URL}/api/transactions/${id}`, {
         method: 'PUT',
         headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
@@ -124,14 +117,9 @@ export function useTransactions(frequency) {
   const deleteTransaction = useCallback(async (id) => {
     setError(null);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('Usuário não autenticado.');
-
       const response = await fetch(`${API_URL}/api/transactions/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
 
       if (!response.ok) {

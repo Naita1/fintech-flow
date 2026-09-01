@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext(null);
 
@@ -9,28 +9,19 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     fetch(`${API_URL}/api/auth/me`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json"
       },
-      credentials: "include"
+      credentials: "include" 
     })
       .then((r) => {
         if (r.ok) return r.json();
-        localStorage.removeItem("token");
         return null;
       })
       .then(setUser)
       .catch(() => {
-        localStorage.removeItem("token");
         setUser(null);
       })
       .finally(() => setLoading(false));
@@ -40,18 +31,16 @@ export function AuthProvider({ children }) {
     const res = await fetch(`${API_URL}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
+      credentials: "include", 
       body: JSON.stringify({ email, password }),
     });
 
-    if (!res.ok) throw new Error((await res.json()).error || "Erro ao entrar");
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.error || errorData.message || "Erro ao entrar");
+    }
     
     const data = await res.json();
-    
-    if (data.token) {
-      localStorage.getItem("token");
-      localStorage.setItem("token", data.token);
-    }
     
     const userData = data.user || { id: data.id, name: data.name, email: data.email };
     setUser(userData);
@@ -67,7 +56,6 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error("Erro ao realizar logout no servidor:", err);
     } finally {
-      localStorage.removeItem("token");
       setUser(null);
     }
   };
