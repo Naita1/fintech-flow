@@ -1,14 +1,43 @@
-import { Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Trash2, Pencil } from "lucide-react";
 import { fmtBRL } from "../../utils/format";
 import TipoBadge from "./TipoBadge";
 import CategoriaBadge from "./CategoriaBadge";
+import EditTransactionModal from "./EditTransactionModal";
 
-export default function FinancialTable({ transacoes, onDeleteTransaction }) {
+export default function FinancialTable({ transacoes, onDeleteTransaction, onUpdateTransaction }) {
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
+
   const sorted = [...transacoes].sort((a, b) => {
     const [da, ma] = (a.data || a.date || "").split("/");
     const [db, mb] = (b.data || b.date || "").split("/");
     return ma === mb ? da - db : ma - mb;
   });
+
+  const handleDelete = (id) => {
+    if (window.confirm("Deseja realmente apagar esta movimentação?")) {
+      onDeleteTransaction(id);
+    }
+  };
+
+  const handleEdit = (transaction) => {
+    setEditingTransaction(transaction);
+    setEditModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setEditModalOpen(false);
+    setEditingTransaction(null);
+  };
+  const handleSaveTransaction = (transactionData) => {
+    if (typeof onUpdateTransaction === "function") {
+      onUpdateTransaction(transactionData);
+    } else {
+      console.warn("A função onUpdateTransaction não foi fornecida ao FinancialTable.");
+    }
+    handleCloseModal();
+  };
 
   if (sorted.length === 0) {
     return (
@@ -20,14 +49,8 @@ export default function FinancialTable({ transacoes, onDeleteTransaction }) {
     );
   }
 
-  const handleDelete = (id) => {
-    if (window.confirm("Deseja realmente apagar esta movimentação?")) {
-      onDeleteTransaction(id);
-    }
-  };
-
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <>
       <div className="hidden overflow-x-auto md:block scrolling-touch">
         <table className="w-full text-left text-sm">
           <thead>
@@ -73,6 +96,13 @@ export default function FinancialTable({ transacoes, onDeleteTransaction }) {
                 </td>
                 <td className="whitespace-nowrap px-5 py-3.5 text-center">
                   <button
+                    onClick={() => handleEdit(t)}
+                    className="inline-flex items-center justify-center p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors mr-1"
+                    title="Editar movimentação"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                  <button
                     onClick={() => handleDelete(t.id)}
                     className="inline-flex items-center justify-center p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
                     title="Excluir movimentação"
@@ -85,6 +115,7 @@ export default function FinancialTable({ transacoes, onDeleteTransaction }) {
           </tbody>
         </table>
       </div>
+
       <div className="divide-y divide-slate-100 md:hidden">
         {sorted.map((t) => (
           <div
@@ -119,6 +150,13 @@ export default function FinancialTable({ transacoes, onDeleteTransaction }) {
                 {fmtBRL(t.valor || t.amount)}
               </p>
               <button
+                onClick={() => handleEdit(t)}
+                className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
+                title="Editar movimentação"
+              >
+                <Pencil size={16} />
+              </button>
+              <button
                 onClick={() => handleDelete(t.id)}
                 className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
                 title="Excluir movimentação"
@@ -129,6 +167,15 @@ export default function FinancialTable({ transacoes, onDeleteTransaction }) {
           </div>
         ))}
       </div>
-    </div>
+
+      {editingTransaction && (
+        <EditTransactionModal
+          isOpen={isEditModalOpen}
+          onClose={handleCloseModal}
+          transaction={editingTransaction}
+          onSave={handleSaveTransaction}
+        />
+      )}
+    </>
   );
 }

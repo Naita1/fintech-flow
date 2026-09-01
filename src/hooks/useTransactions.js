@@ -78,9 +78,11 @@ export function useTransactions(frequency) {
     }
   }, [fetchTransactions, frequency]);
 
-  const updateTransaction = useCallback(async (id, rawData) => {
+  const updateTransaction = useCallback(async (transactionData) => {
     setError(null);
     
+    const { id, ...rawData } = transactionData;
+
     const payload = {
       description: rawData.descricao || rawData.description,
       amount: parseFloat(rawData.valor || rawData.amount),

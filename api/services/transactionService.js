@@ -20,7 +20,6 @@ export async function getAllTransactions(userId, filters = {}) {
   return rows.map(tx => ({
     ...tx,
     tipo: tx.type === 'income' ? 'entrada' : 'saida',
-    type: tx.type === 'income' ? 'entrada' : 'saida',
     descricao: tx.description,
     valor: parseFloat(tx.amount),
     data: tx.date,

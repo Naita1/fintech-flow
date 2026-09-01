@@ -1,228 +1,149 @@
-import { useState } from "react";
-import { X, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
-import { CATEGORIAS_ENTRADA, CATEGORIAS_SAIDA } from "../../constants/categories";
+import { useState, useEffect } from 'react';
+import { CATEGORIAS } from '../../constants/categories';
 
-export default function TransactionForm({ onClose, onSubmit }) {
-  const [tipo, setTipo] = useState("entrada");
-  const [descricao, setDescricao] = useState("");
-  const [categoria, setCategoria] = useState(CATEGORIAS_ENTRADA[0]);
-  const [valor, setValor] = useState("");
-  const [data, setData] = useState("");
-  const [observacao, setObservacao] = useState("");
+export default function TransactionForm({ onSubmit, initialData = null, onCancel, submitButtonText = "Salvar" }) {
+  const [descricao, setDescricao] = useState('');
+  const [valor, setValor] = useState('');
+  const [tipo, setTipo] = useState('saida');
+  const [categoria, setCategoria] = useState(CATEGORIAS[0]?.value || 'Outros');
+  const [data, setData] = useState(new Date().toISOString().split('T')[0]);
 
-  const categorias = tipo === "entrada" ? CATEGORIAS_ENTRADA : CATEGORIAS_SAIDA;
-
-  const handleTipo = (novoTipo) => {
-    setTipo(novoTipo);
-    setCategoria(novoTipo === "entrada" ? CATEGORIAS_ENTRADA[0] : CATEGORIAS_SAIDA[0]);
-  };
-
-  const podeSalvar = descricao.trim() && valor && Number(valor) > 0 && data;
+  useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
+      setDescricao(initialData.descricao || initialData.description || '');
+      setValor(initialData.valor || initialData.amount || '');
+      setTipo(initialData.tipo || initialData.type || 'saida');
+      setCategoria(initialData.categoria || initialData.category || 'Outros');
+      setData((initialData.data || initialData.date || '').split('T')[0]);
+    } else {
+      setDescricao('');
+      setValor('');
+      setTipo('saida');
+      setCategoria(CATEGORIAS[0]?.value || 'Outros');
+      setData(new Date().toISOString().split('T')[0]);
+    }
+  }, [initialData]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!podeSalvar) return;
+    if (!descricao || !valor || !data) return;
+
     onSubmit({
+      descricao,
+      valor: parseFloat(valor),
       tipo,
-      descricao: descricao.trim(),
       categoria,
-      valor: Number(valor),
       data,
-      observacao: observacao.trim(),
     });
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/60 p-0 backdrop-blur-[2px] transition-opacity duration-200 sm:items-center sm:p-4">
-      <div className="max-h-[90vh] sm:max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-2xl scrolling-touch sm:max-w-lg sm:rounded-2xl motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-6 sm:motion-safe:zoom-in-95 motion-reduce:transition-none">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-5 py-4 backdrop-blur-md">
-          <h2 className="text-base font-bold text-slate-800">Nova movimentação</h2>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="descricao" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+          Descrição
+        </label>
+        <input
+          type="text"
+          id="descricao"
+          placeholder="Ex: Compras do mês"
+          value={descricao}
+          onChange={(e) => setDescricao(e.target.value)}
+          className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+          required
+        />
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="valor" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+            Valor (R$)
+          </label>
+          <input
+            type="number"
+            id="valor"
+            step="0.01"
+            placeholder="0,00"
+            value={valor}
+            onChange={(e) => setValor(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="data" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+            Data
+          </label>
+          <input
+            type="date"
+            id="data"
+            value={data}
+            onChange={(e) => setData(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+            required
+          />
+        </div>
+      </div>
+      <div>
+        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+          Tipo
+        </label>
+        <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={onClose}
             type="button"
-            className="
-              inline-flex min-h-9 min-w-9 items-center justify-center rounded-full text-slate-400 
-              transition-colors duration-150 ease-out 
-              hover:bg-slate-100 hover:text-slate-600 
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-800
-              motion-safe:active:scale-95
-            "
-            aria-label="Fechar modal"
+            onClick={() => setTipo('entrada')}
+            className={`w-full rounded-xl py-2.5 px-4 text-sm font-semibold transition-all border ${
+              tipo === 'entrada'
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm'
+                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+            }`}
           >
-            <X size={18} />
+            Entrada
+          </button>
+          <button
+            type="button"
+            onClick={() => setTipo('saida')}
+            className={`w-full rounded-xl py-2.5 px-4 text-sm font-semibold transition-all border ${
+              tipo === 'saida'
+                ? 'bg-rose-50 text-rose-700 border-rose-300 shadow-sm'
+                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            Saída
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4 px-5 py-5 sm:px-6">
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Tipo
-            </label>
-            <div className="grid grid-cols-2 gap-2.5">
-              <button
-                type="button"
-                onClick={() => handleTipo("entrada")}
-                className={`
-                  flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold select-none
-                  transition-all duration-150 ease-out
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500
-                  motion-safe:active:scale-[0.98]
-                  motion-reduce:transition-none
-                  ${
-                    tipo === "entrada"
-                      ? "border-emerald-500 bg-emerald-50/80 text-emerald-700 shadow-sm"
-                      : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50"
-                  }
-                `}
-              >
-                <ArrowUpCircle size={18} className="shrink-0" />
-                <span>Entrada</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleTipo("saida")}
-                className={`
-                  flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold select-none
-                  transition-all duration-150 ease-out
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500
-                  motion-safe:active:scale-[0.98]
-                  motion-reduce:transition-none
-                  ${
-                    tipo === "saida"
-                      ? "border-rose-500 bg-rose-50/80 text-rose-700 shadow-sm"
-                      : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50"
-                  }
-                `}
-              >
-                <ArrowDownCircle size={18} className="shrink-0" />
-                <span>Saída</span>
-              </button>
-            </div>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Descrição
-            </label>
-            <input
-              type="text"
-              value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-              placeholder="Ex.: Venda de produtos, pagamento de fornecedor..."
-              className="
-                w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-[16px] text-slate-700 outline-none sm:text-sm
-                transition-all duration-150 ease-out
-                placeholder:text-slate-400
-                focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10
-              "
-            />
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Categoria
-              </label>
-              <select
-                value={categoria}
-                onChange={(e) => setCategoria(e.target.value)}
-                className="
-                  w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-[16px] text-slate-700 outline-none sm:text-sm bg-white
-                  transition-all duration-150 ease-out
-                  focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10
-                "
-              >
-                {categorias.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Valor (R$)
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={valor}
-                onChange={(e) => setValor(e.target.value)}
-                placeholder="0,00"
-                className="
-                  w-full rounded-xl border border-slate-200 px-3.5 py-2.5 font-mono text-[16px] text-slate-700 outline-none sm:text-sm
-                  transition-all duration-150 ease-out
-                  placeholder:text-slate-400
-                  focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10
-                "
-              />
-            </div>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Data
-            </label>
-            <input
-              type="date"
-              value={data}
-              onChange={(e) => setData(e.target.value)}
-              className="
-                w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-[16px] text-slate-700 outline-none sm:text-sm bg-white
-                transition-all duration-150 ease-out
-                focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10
-              "
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Observação <span className="normal-case text-slate-300">(opcional)</span>
-            </label>
-            <textarea
-              value={observacao}
-              onChange={(e) => setObservacao(e.target.value)}
-              rows={2}
-              placeholder="Alguma informação adicional sobre essa movimentação..."
-              className="
-                w-full resize-none rounded-xl border border-slate-200 px-3.5 py-2.5 text-[16px] text-slate-700 outline-none sm:text-sm
-                transition-all duration-150 ease-out
-                placeholder:text-slate-400
-                focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10
-              "
-            />
-          </div>
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="
-                flex-1 min-h-11 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 select-none
-                transition-all duration-150 ease-out
-                hover:bg-slate-50 hover:border-slate-300
-                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-800
-                motion-safe:active:scale-[0.98]
-                motion-reduce:transition-none
-              "
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={!podeSalvar}
-              className="
-                flex-1 min-h-11 rounded-xl bg-slate-800 py-2.5 text-sm font-semibold text-white shadow-sm select-none
-                transition-all duration-150 ease-out
-                hover:bg-slate-900 hover:shadow
-                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-800 focus-visible:ring-offset-2
-                motion-safe:active:scale-[0.98]
-                disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-slate-800 disabled:hover:shadow-none disabled:active:scale-100
-                motion-reduce:transition-none
-              "
-            >
-              Salvar movimentação
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
+      <div>
+        <label htmlFor="categoria" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+          Categoria
+        </label>
+        <select
+          id="categoria"
+          value={categoria}
+          onChange={(e) => setCategoria(e.target.value)}
+          className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+        >
+          {CATEGORIAS.map(cat => (
+            <option key={cat.value || cat} value={cat.value || cat}>
+              {cat.label || cat}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+        >
+          {submitButtonText}
+        </button>
+      </div>
+    </form>
   );
 }

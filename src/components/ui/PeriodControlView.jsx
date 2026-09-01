@@ -4,7 +4,7 @@ import PeriodSelector from "./PeriodSelector";
 import SummaryCard from "./SummaryCard";
 import ProfitLossIndicator from "./ProfitLossIndicator";
 import FinancialTable from "./FinancialTable";
-import TransactionForm from "./TransactionForm";
+import AddTransactionModal from "../../constants/AddTransactionModal";
 import { totals } from "../../utils/calculations";
 import { fmtBRL } from "../../utils/format";
 
@@ -12,10 +12,11 @@ export default function PeriodControlView({
   periods = [],
   onAddTransaction,
   onDeleteTransaction,
+  onUpdateTransaction,
   tipoRotulo = "do período",
 }) {
   const [selectedPeriodId, setSelectedPeriodId] = useState(null);
-  const [showForm, setShowForm] = useState(false);
+  const [isAddModalOpen, setAddModalOpen] = useState(false);
 
   useEffect(() => {
     if (periods.length > 0 && !selectedPeriodId) {
@@ -49,7 +50,7 @@ export default function PeriodControlView({
           <h3 className="text-sm font-semibold text-slate-600">Movimentações {tipoRotulo}</h3>
           <button
             type="button"
-            onClick={() => setShowForm(true)}
+            onClick={() => setAddModalOpen(true)}
             className="
               inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm select-none
               transition-all duration-150 ease-out
@@ -66,18 +67,15 @@ export default function PeriodControlView({
         <FinancialTable
           transacoes={transacoes}
           onDeleteTransaction={onDeleteTransaction}
+          onUpdateTransaction={onUpdateTransaction}
         />
       </div>
 
-      {showForm && (
-        <TransactionForm
-          onClose={() => setShowForm(false)}
-          onSubmit={(novaTx) => {
-            onAddTransaction(novaTx);
-            setShowForm(false);
-          }}
-        />
-      )}
+      <AddTransactionModal
+        isOpen={isAddModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        onSave={onAddTransaction}
+      />
     </div>
   );
 }

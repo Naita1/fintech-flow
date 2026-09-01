@@ -31,7 +31,8 @@ export default function App() {
     loading: txLoading, 
     error, 
     addTransaction, 
-    deleteTransaction 
+    deleteTransaction,
+    updateTransaction
   } = useTransactions(frequency);
   
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -89,6 +90,7 @@ export default function App() {
                   weeks={weeks}
                   onAddTransaction={addTransaction}
                   onDeleteTransaction={deleteTransaction}
+                  onUpdateTransaction={updateTransaction}
                 />
               }
             />
@@ -99,6 +101,7 @@ export default function App() {
                   quinzenas={quinzenas}
                   onAddTransaction={addTransaction}
                   onDeleteTransaction={deleteTransaction}
+                  onUpdateTransaction={updateTransaction}
                 />
               }
             />
