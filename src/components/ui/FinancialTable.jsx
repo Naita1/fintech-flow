@@ -9,12 +9,6 @@ export default function FinancialTable({ transacoes, onDeleteTransaction, onUpda
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
 
-  const sorted = [...transacoes].sort((a, b) => {
-    const [da, ma] = (a.data || a.date || "").split("/");
-    const [db, mb] = (b.data || b.date || "").split("/");
-    return ma === mb ? da - db : ma - mb;
-  });
-
   const handleDelete = (id) => {
     if (window.confirm("Deseja realmente apagar esta movimentação?")) {
       onDeleteTransaction(id);
@@ -39,7 +33,7 @@ export default function FinancialTable({ transacoes, onDeleteTransaction, onUpda
     handleCloseModal();
   };
 
-  if (sorted.length === 0) {
+  if (transacoes.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center transition-all duration-200">
         <p className="text-sm font-medium text-slate-500">
@@ -64,7 +58,7 @@ export default function FinancialTable({ transacoes, onDeleteTransaction, onUpda
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {sorted.map((t) => (
+            {transacoes.map((t) => (
               <tr
                 key={t.id}
                 className="transition-colors duration-150 ease-out hover:bg-slate-50/80"
@@ -117,7 +111,7 @@ export default function FinancialTable({ transacoes, onDeleteTransaction, onUpda
       </div>
 
       <div className="divide-y divide-slate-100 md:hidden">
-        {sorted.map((t) => (
+        {transacoes.map((t) => (
           <div
             key={t.id}
             className="flex items-start justify-between gap-3 p-4 transition-colors duration-150 ease-out motion-safe:active:bg-slate-50"
