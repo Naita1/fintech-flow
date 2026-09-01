@@ -4,6 +4,12 @@ O **fintech-flow** é uma aplicação web full-stack para gestão financeira pes
 
 O sistema permite o controle de movimentações financeiras, visualização por períodos semanais e quinzenais, dashboard com indicadores financeiros, autenticação de usuários e persistência de dados em PostgreSQL.
 
+🚀 **[Acessar Aplicação em Produção](https://fintechflow-demo.vercel.app/)**
+
+### 🔑 Credenciais para Teste (Demo)
+- **E-mail:** `teste@email.com`
+- **Senha:** `123456`
+
 ---
 
 ## ✨ Tecnologias Utilizadas
@@ -35,30 +41,30 @@ O sistema permite o controle de movimentações financeiras, visualização por 
 
 ---
 
-## 🏛️ Arquitetura
+## 📁 Estrutura do Projeto
 
 ```text
 fintech-flow/
-├── api/                       # Back-end Node.js + Express
-│   ├── auth/                  # Controllers e rotas de autenticação
-│   ├── _db.js                 # Configuração do pool PostgreSQL
-│   └── server.js              # Servidor HTTP e rotas REST
-│
-├── scripts/                   # Scripts auxiliares
-│   ├── schema.sql             # Estrutura do banco de dados
-│   └── seedUser.js            # Inicialização do banco e usuário demo
-│
-├── src/                       # Front-end React + Vite
-│   ├── components/            # Componentes reutilizáveis
-│   │   └── layout/            # Sidebar, Header e Shell
-│   ├── context/               # Context API
-│   ├── hooks/                 # Custom Hooks
-│   ├── utils/                 # Formatadores e cálculos
-│   └── views/                 # Telas da aplicação
-│
-├── .env.example               # Exemplo de variáveis de ambiente
-├── .gitignore
-└── README.md
+├── api/                      # Backend Node.js / Express
+│   ├── config/               # Configuração do banco (db.js com SSL Neon DB)
+│   ├── controllers/          # Controladores das rotas de API
+│   ├── middlewares/          # Middlewares (autenticação JWT, validações)
+│   ├── routes/               # Definição dos endpoints REST
+│   ├── services/             # Regras de negócio e queries PostgreSQL
+│   └── server.js             # Entrada da API Express
+├── scripts/                  # Scripts SQL do banco de dados
+│   └── schema.sql            # Schema das tabelas (users, transactions)
+├── src/                      # Frontend React (Vite + Tailwind CSS)
+│   ├── components/           # Componentes de interface (layout, ui, FinanceDashboard)
+│   ├── constants/            # Constantes da aplicação
+│   ├── context/              # Contextos globais (AuthContext)
+│   ├── hooks/                # Custom hooks (useTransactions)
+│   ├── utils/                # Utilitários de cálculo, formatação e períodos
+│   ├── views/                # Telas (WeeklyFinance, BiweeklyFinance, Dashboard, etc.)
+│   ├── App.jsx               # Componente raiz
+│   └── main.jsx              # Ponto de entrada do React
+├── .env                      # Variáveis de ambiente
+└── README.md                 # Documentação do projeto
 ```
 
 ---
@@ -156,37 +162,7 @@ Em dispositivos menores, os dados são adaptados para uma visualização em cart
 
 ---
 
-## 🔑 Acesso à Demonstração
-
-A aplicação possui uma conta pública destinada exclusivamente para demonstração.
-
-### Usuário de Teste
-
-**E-mail:**
-
-```text
-teste@email.com
-```
-
-**Senha:**
-
-```text
-123456
-```
-
-Essa conta pode ser utilizada para explorar as funcionalidades da aplicação publicada.
-
-### 🌐 Aplicação em Produção
-
-> Substitua o endereço abaixo pela URL gerada pela Vercel após o deploy.
-
-```text
-https://seu-projeto.vercel.app
-```
-
----
-
-## 💻 Como Rodar o Projeto Localmente
+##  Como Rodar o Projeto Localmente
 
 ### Pré-requisitos
 
@@ -233,23 +209,11 @@ PORT=3000
 
 ---
 
-### 4. Criar a Estrutura do Banco e Usuário Demo
-
-Execute:
-
-```bash
-node scripts/seedUser.js
-```
-
-O script irá:
-
-1. Ler o arquivo `scripts/schema.sql`;
-2. Criar as tabelas necessárias;
-3. Configurar as restrições do banco;
-4. Criar o usuário de demonstração;
-5. Evitar a criação duplicada do usuário caso o comando seja executado novamente.
+### 4. Criar a Estrutura do Banco
 
 O schema também pode ser executado manualmente através de ferramentas como **DBeaver**, **pgAdmin** ou pelo console do **Neon DB**.
+
+Para criar as tabelas, você pode copiar o conteúdo de `scripts/schema.sql` e executá-lo diretamente no seu cliente PostgreSQL.
 
 ---
 
@@ -295,19 +259,20 @@ Armazena os usuários cadastrados na aplicação.
 
 ### `transactions`
 
-Armazena as movimentações financeiras.
+Armazena as movimentações financeiras, associadas a um usuário.
 
-| Campo         | Tipo      | Descrição                 |
-| ------------- | --------- | ------------------------- |
-| `id`          | SERIAL    | Identificador único       |
-| `user_id`     | INT       | Usuário proprietário      |
-| `description` | VARCHAR   | Descrição da movimentação |
-| `amount`      | NUMERIC   | Valor da movimentação     |
-| `type`        | VARCHAR   | `income` ou `expense`     |
-| `period_type` | VARCHAR   | `weekly` ou `biweekly`    |
-| `period_id`   | VARCHAR   | Identificador do período  |
-| `date`        | DATE      | Data da movimentação      |
-| `created_at`  | TIMESTAMP | Data de criação           |
+| Campo         | Tipo      | Descrição                               |
+| ------------- | --------- | --------------------------------------- |
+| `id`          | SERIAL    | Identificador único                     |
+| `description` | VARCHAR   | Descrição da movimentação               |
+| `amount`      | NUMERIC   | Valor da movimentação                   |
+| `type`        | VARCHAR   | `income` ou `expense`                   |
+| `category`    | VARCHAR   | Categoria da movimentação               |
+| `frequency`   | VARCHAR   | `weekly`, `biweekly` ou `monthly`       |
+| `date`        | DATE      | Data da movimentação                    |
+| `observation` | TEXT      | Observação (opcional)                   |
+| `user_id`     | INT       | Chave estrangeira para a tabela `users` |
+| `created_at`  | TIMESTAMP | Data de criação                         |
 
 A relação entre `users` e `transactions` utiliza uma chave estrangeira com exclusão em cascata:
 
