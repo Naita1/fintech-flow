@@ -3,6 +3,38 @@ import { groupTransactionsByWeek, groupTransactionsByBiweekly } from '../utils/p
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
+const normalizeTransaction = (apiTx) => {
+  if (!apiTx) return null;
+  return {
+    ...apiTx,
+    id: apiTx.id,
+    descricao: apiTx.description || apiTx.descricao || '',
+    description: apiTx.description || apiTx.descricao || '',
+    valor: parseFloat(apiTx.amount ?? apiTx.valor ?? 0),
+    amount: parseFloat(apiTx.amount ?? apiTx.valor ?? 0),
+    tipo: apiTx.type || apiTx.tipo || 'saida',
+    type: apiTx.type || apiTx.tipo || 'saida',
+    categoria: apiTx.category || apiTx.categoria || 'Outros',
+    category: apiTx.category || apiTx.categoria || 'Outros',
+    frequencia: apiTx.frequency || apiTx.frequencia,
+    frequency: apiTx.frequency || apiTx.frequencia,
+    data: apiTx.date || apiTx.data || '',
+    date: apiTx.date || apiTx.data || '',
+    observacao: apiTx.observation || apiTx.observacao || '',
+    observation: apiTx.observation || apiTx.observacao || ''
+  };
+};
+
+const toApiPayload = (domainData, fallbackFrequency) => ({
+  description: domainData.descricao || domainData.description,
+  amount: parseFloat(domainData.valor || domainData.amount),
+  type: domainData.tipo || domainData.type || 'saida',
+  category: domainData.categoria || domainData.category || 'Outros',
+  frequency: domainData.frequencia || domainData.frequency || fallbackFrequency,
+  date: domainData.data || domainData.date || new Date().toISOString().split('T')[0],
+  observation: domainData.observacao || domainData.observation || null,
+});
+
 export function useTransactions(frequency) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +61,9 @@ export function useTransactions(frequency) {
       }
 
       const data = await response.json();
-      setTransactions(data.sort((a, b) => new Date(b.date) - new Date(a.date)));
+      const normalized = Array.isArray(data) ? data.map(normalizeTransaction) : [];
+      
+      setTransactions(normalized.sort((a, b) => new Date(b.date) - new Date(a.date)));
     } catch (err) {
       setError(err.message);
       console.error(err);
@@ -44,23 +78,12 @@ export function useTransactions(frequency) {
 
   const addTransaction = useCallback(async (rawData) => {
     setError(null);
-
-    const payload = {
-      description: rawData.descricao || rawData.description,
-      amount: parseFloat(rawData.valor || rawData.amount),
-      type: rawData.tipo || rawData.type || 'saida',
-      category: rawData.categoria || rawData.category || 'Outros',
-      frequency: frequency, 
-      date: rawData.data || rawData.date || new Date().toISOString().split('T')[0],
-      observation: rawData.observacao || rawData.observation || null,
-    };
+    const payload = toApiPayload(rawData, frequency);
 
     try {
       const response = await fetch(`${API_URL}/api/transactions`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(payload),
       });
@@ -80,25 +103,13 @@ export function useTransactions(frequency) {
 
   const updateTransaction = useCallback(async (transactionData) => {
     setError(null);
-    
     const { id, ...rawData } = transactionData;
-
-    const payload = {
-      description: rawData.descricao || rawData.description,
-      amount: parseFloat(rawData.valor || rawData.amount),
-      type: rawData.tipo || rawData.type,
-      category: rawData.categoria || rawData.category,
-      frequency: rawData.frequencia || rawData.frequency || frequency,
-      date: rawData.data || rawData.date,
-      observation: rawData.observacao || rawData.observation || null,
-    };
+    const payload = toApiPayload(rawData, frequency);
 
     try {
       const response = await fetch(`${API_URL}/api/transactions/${id}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(payload),
       });

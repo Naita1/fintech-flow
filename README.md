@@ -55,7 +55,7 @@ fintech-flow/
 ├── scripts/                  # Scripts SQL do banco de dados
 │   └── schema.sql            # Schema das tabelas (users, transactions)
 ├── src/                      # Frontend React (Vite + Tailwind CSS)
-│   ├── components/           # Componentes de interface (layout, ui, FinanceDashboard)
+│   ├── components/           # Componentes de interface (layout, ui)
 │   ├── constants/            # Constantes da aplicação
 │   ├── context/              # Contextos globais (AuthContext)
 │   ├── hooks/                # Custom hooks (useTransactions)
