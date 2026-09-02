@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Trash2, Pencil } from "lucide-react";
 import { fmtBRL } from "../../utils/format";
+import { formatDate } from "../../utils/formatDate";
 import TipoBadge from "./TipoBadge";
 import CategoriaBadge from "./CategoriaBadge";
 import EditTransactionModal from "./EditTransactionModal";
@@ -64,7 +65,7 @@ export default function FinancialTable({ transacoes, onDeleteTransaction, onUpda
                 className="transition-colors duration-150 ease-out hover:bg-slate-50/80"
               >
                 <td className="whitespace-nowrap px-5 py-3.5 font-mono text-xs text-slate-500">
-                  {t.data || t.date}
+                  {formatDate(t.data || t.date)}
                 </td>
                 <td className="px-5 py-3.5">
                   <p className="font-medium text-slate-700">{t.descricao || t.description}</p>
@@ -118,7 +119,9 @@ export default function FinancialTable({ transacoes, onDeleteTransaction, onUpda
           >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs text-slate-400">{t.data || t.date}</span>
+                <span className="font-mono text-xs text-slate-400">
+                  {formatDate(t.data || t.date)}
+                </span>
               </div>
               <p className="mt-0.5 truncate font-medium text-slate-700">{t.descricao || t.description}</p>
 
