@@ -1,20 +1,31 @@
 import jwt from 'jsonwebtoken';
+import { promisify } from 'util';
+import pool from '../config/database.js'; 
+import AppError from '../../src/utils/AppError.js';
 
-export function authMiddleware(req, res, next) {
-  const token = req.cookies?.token;
-
-  if (!token) {
-    return res.status(401).json({ error: 'Token de autenticação não fornecido.' });
-  }
-
+export const authMiddleware = async (req, res, next) => {
   try {
-    const secret = process.env.JWT_SECRET;
-    if (!secret) throw new Error('Chave JWT não configurada no servidor.');
+    const token = req.cookies?.token;
 
-    const decoded = jwt.verify(token, secret);
-    req.user = decoded; 
+    if (!token) {
+      return next(new AppError('Você não está logado. Por favor, faça o login para obter acesso.', 401));
+    }
+
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+    const { rows } = await pool.query('SELECT id, name, email FROM users WHERE id = $1', [decoded.id]);
+    const currentUser = rows[0];
+
+    if (!currentUser) {
+      return next(new AppError('O usuário pertencente a este token não existe mais.', 401));
+    }
+
+    req.user = currentUser;
     next();
-  } catch (err) {
-    return res.status(401).json({ error: 'Token inválido ou expirado.' });
+  } catch (error) {
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return next(new AppError('Token inválido ou expirado. Por favor, faça o login novamente.', 401));
+    }
+    next(error);
   }
-}
+};

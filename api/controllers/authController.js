@@ -1,5 +1,5 @@
 import * as authService from '../services/authService.js';
-import AppError from '../utils/AppError.js';
+import AppError from '../../src/utils/AppError.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
