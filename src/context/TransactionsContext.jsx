@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo } from "react";
 import { useAuth } from "./AuthContext";
 import { useTransactions } from "../hooks/useTransactions";
 
-import { groupTransactionsByPeriod } from "../utils/periods";
+import { groupTransactionsByWeekly, groupTransactionsByBiweekly } from "../utils/periods";
 
 const TransactionsContext = createContext(null);
 
@@ -18,16 +18,25 @@ export function TransactionsProvider({ children }) {
     refetch,
   } = useTransactions(user?.id);
 
-
-  const weeks = useMemo(
-    () => (transactions ? groupTransactionsByPeriod(transactions, "semanal") : []),
+  const weeklyTransactions = useMemo(
+    () => transactions?.filter(t => 
+      (t.frequencia || t.frequency) === 'semanal' || 
+      (t.frequencia || t.frequency) === 'weekly'
+    ) || [],
     [transactions]
   );
 
-  const quinzenas = useMemo(
-    () => (transactions ? groupTransactionsByPeriod(transactions, "quinzenal") : []),
+  const biweeklyTransactions = useMemo(
+    () => transactions?.filter(t => 
+      (t.frequencia || t.frequency) === 'quinzenal' || 
+      (t.frequencia || t.frequency) === 'biweekly'
+    ) || [],
     [transactions]
   );
+
+  const weeks = useMemo(() => groupTransactionsByWeekly(weeklyTransactions), [weeklyTransactions]);
+
+  const quinzenas = useMemo(() => groupTransactionsByBiweekly(biweeklyTransactions), [biweeklyTransactions]);
 
   const value = {
     transactions, 

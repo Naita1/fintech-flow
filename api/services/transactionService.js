@@ -1,17 +1,24 @@
 import pool from '../config/database.js';
 import AppError from '../../src/utils/AppError.js';
 
-function normalizeFrequency(freq) {
-  const map = {
-    semanal: 'weekly',
-    quinzenal: 'biweekly',
-    mensal: 'monthly',
-    weekly: 'weekly',
-    biweekly: 'biweekly',
-    monthly: 'monthly'
-  };
-  return map[freq?.toLowerCase()] || 'monthly';
-}
+const typeMap = {
+  entrada: 'income',
+  receita: 'income',
+  income: 'income',
+  saida: 'expense',
+  saída: 'expense',
+  despesa: 'expense',
+  expense: 'expense',
+};
+
+const frequencyMap = {
+  semanal: 'weekly',
+  weekly: 'weekly',
+  quinzenal: 'biweekly',
+  biweekly: 'biweekly',
+  mensal: 'monthly',
+  monthly: 'monthly',
+};
 
 export async function getAllTransactions(userId, queryParams = {}) {
   const { month, year } = queryParams;
@@ -30,36 +37,35 @@ export async function getAllTransactions(userId, queryParams = {}) {
 }
 
 export async function createTransaction(userId, transactionData) {
-  const { description, amount, type, category, frequency, date, observation } = transactionData;
+  const { description, amount, category, date, observation } = transactionData;
 
-  const validFrequency = normalizeFrequency(frequency);
+  const rawType = String(transactionData.type || transactionData.tipo || '').toLowerCase();
+  const type = typeMap[rawType] || 'income';
+
+  const rawFrequency = String(transactionData.frequency || transactionData.frequencia || '').toLowerCase();
+  const frequency = frequencyMap[rawFrequency] || 'weekly';
 
   const { rows } = await pool.query(
     `INSERT INTO transactions (user_id, description, amount, type, category, frequency, date, observation) 
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
      RETURNING *`,
-    [
-      userId,
-      description,
-      amount,
-      type,
-      category,
-      validFrequency,
-      date,
-      observation || null
-    ]
+    [userId, description, amount, type, category, frequency, date, observation || null]
   );
   return rows[0];
 }
 
 export async function updateTransaction(userId, transactionId, transactionData) {
-  const { description, amount, type, category, frequency, date, observation } = transactionData;
+  const { description, amount, category, date, observation } = transactionData;
 
-  const validFrequency = normalizeFrequency(frequency);
+  const rawType = String(transactionData.type || transactionData.tipo || '').toLowerCase();
+  const type = typeMap[rawType] || 'income';
+
+  const rawFrequency = transactionData.frequency || transactionData.frequencia;
+  const frequency = rawFrequency ? frequencyMap[String(rawFrequency).toLowerCase()] : null;
 
   const { rows, rowCount } = await pool.query(
     `UPDATE transactions 
-     SET description = $1, amount = $2, type = $3, category = $4, frequency = $5, date = $6, observation = $7
+     SET description = $1, amount = $2, type = $3, category = $4, frequency = COALESCE($5, frequency), date = $6, observation = $7
      WHERE id = $8 AND user_id = $9
      RETURNING *`,
     [
@@ -67,7 +73,7 @@ export async function updateTransaction(userId, transactionId, transactionData) 
       amount,
       type,
       category,
-      validFrequency,
+      frequency, 
       date,
       observation || null,
       transactionId,

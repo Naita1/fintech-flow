@@ -14,6 +14,7 @@ export default function PeriodControlView({
   onDeleteTransaction,
   onUpdateTransaction,
   tipoRotulo = "do período",
+  frequenciaPadrao = "semanal",
 }) {
   const [selectedPeriodId, setSelectedPeriodId] = useState(null);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
@@ -28,6 +29,26 @@ export default function PeriodControlView({
     periods.find((p) => p.id === selectedPeriodId) || periods[0] || {};
   const transacoes = activePeriod?.transacoes || [];
   const { entradas, saidas, saldo } = totals(transacoes);
+
+  const handleAddWithFrequency = (data) => {
+    if (typeof onAddTransaction === "function") {
+      onAddTransaction({
+        ...data,
+        frequencia: frequenciaPadrao,
+        frequency: frequenciaPadrao === "quinzenal" ? "biweekly" : "weekly",
+      });
+    }
+  };
+
+  const handleUpdateWithFrequency = (data) => {
+    if (typeof onUpdateTransaction === "function") {
+      onUpdateTransaction({
+        ...data,
+        frequencia: frequenciaPadrao,
+        frequency: frequenciaPadrao === "quinzenal" ? "biweekly" : "weekly",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -67,14 +88,14 @@ export default function PeriodControlView({
         <FinancialTable
           transacoes={transacoes}
           onDeleteTransaction={onDeleteTransaction}
-          onUpdateTransaction={onUpdateTransaction}
+          onUpdateTransaction={handleUpdateWithFrequency}
         />
       </div>
 
       <AddTransactionModal
         isOpen={isAddModalOpen}
         onClose={() => setAddModalOpen(false)}
-        onSave={onAddTransaction}
+        onSave={handleAddWithFrequency}
       />
     </div>
   );
