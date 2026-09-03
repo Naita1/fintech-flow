@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { groupTransactionsByWeek, groupTransactionsByBiweekly } from '../utils/periods';
+import { groupTransactionsByPeriod } from '../utils/periods';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -16,8 +16,8 @@ const normalizeTransaction = (apiTx) => {
     type: apiTx.type || apiTx.tipo || 'saida',
     categoria: apiTx.category || apiTx.categoria || 'Outros',
     category: apiTx.category || apiTx.categoria || 'Outros',
-    frequencia: apiTx.frequency || apiTx.frequencia,
-    frequency: apiTx.frequency || apiTx.frequencia,
+    frequencia: apiTx.frequency || apiTx.frequencia || 'semanal',
+    frequency: apiTx.frequency || apiTx.frequencia || 'semanal',
     data: apiTx.date || apiTx.data || '',
     date: apiTx.date || apiTx.data || '',
     observacao: apiTx.observation || apiTx.observacao || '',
@@ -25,17 +25,17 @@ const normalizeTransaction = (apiTx) => {
   };
 };
 
-const toApiPayload = (domainData, fallbackFrequency) => ({
+const toApiPayload = (domainData) => ({
   description: domainData.descricao || domainData.description,
   amount: parseFloat(domainData.valor || domainData.amount),
   type: domainData.tipo || domainData.type || 'saida',
   category: domainData.categoria || domainData.category || 'Outros',
-  frequency: domainData.frequencia || domainData.frequency || fallbackFrequency,
+  frequency: domainData.frequencia || domainData.frequency || 'semanal',
   date: domainData.data || domainData.date || new Date().toISOString().split('T')[0],
   observation: domainData.observacao || domainData.observation || null,
 });
 
-export function useTransactions(frequency) {
+export function useTransactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,12 +44,7 @@ export function useTransactions(frequency) {
     setLoading(true);
     setError(null);
     try {
-      const url = new URL(`${API_URL}/api/transactions`);
-      if (frequency) {
-        url.searchParams.append('frequency', frequency);
-      }
-
-      const response = await fetch(url.toString(), {
+      const response = await fetch(`${API_URL}/api/transactions`, {
         credentials: 'include'
       });
 
@@ -70,7 +65,7 @@ export function useTransactions(frequency) {
     } finally {
       setLoading(false);
     }
-  }, [frequency]);
+  }, []);
 
   useEffect(() => {
     fetchTransactions();
@@ -78,7 +73,7 @@ export function useTransactions(frequency) {
 
   const addTransaction = useCallback(async (rawData) => {
     setError(null);
-    const payload = toApiPayload(rawData, frequency);
+    const payload = toApiPayload(rawData);
 
     try {
       const response = await fetch(`${API_URL}/api/transactions`, {
@@ -99,12 +94,12 @@ export function useTransactions(frequency) {
       console.error('Erro ao adicionar transação:', err);
       throw err;
     }
-  }, [fetchTransactions, frequency]);
+  }, [fetchTransactions]);
 
   const updateTransaction = useCallback(async (transactionData) => {
     setError(null);
     const { id, ...rawData } = transactionData;
-    const payload = toApiPayload(rawData, frequency);
+    const payload = toApiPayload(rawData);
 
     try {
       const response = await fetch(`${API_URL}/api/transactions/${id}`, {
@@ -125,7 +120,7 @@ export function useTransactions(frequency) {
       console.error('Erro ao atualizar transação:', err);
       throw err;
     }
-  }, [fetchTransactions, frequency]);
+  }, [fetchTransactions]);
 
   const deleteTransaction = useCallback(async (id) => {
     setError(null);
@@ -148,8 +143,8 @@ export function useTransactions(frequency) {
     }
   }, []);
 
-  const weeks = useMemo(() => groupTransactionsByWeek(transactions), [transactions]);
-  const quinzenas = useMemo(() => groupTransactionsByBiweekly(transactions), [transactions]);
+  const weeks = useMemo(() => groupTransactionsByPeriod(transactions, 'semanal'), [transactions]);
+  const quinzenas = useMemo(() => groupTransactionsByPeriod(transactions, 'quinzenal'), [transactions]);
 
   return { 
     transactions, 
@@ -159,6 +154,7 @@ export function useTransactions(frequency) {
     error, 
     addTransaction,
     updateTransaction,
-    deleteTransaction 
+    deleteTransaction,
+    refetch: fetchTransactions
   };
 }

@@ -10,6 +10,7 @@ import ChartCard from "../components/ui/ChartCard";
 import { totals, categoriaDist } from "../utils/calculations";
 import { fmtBRL } from "../utils/format";
 import { CATEGORIA_COR, EMERALD, ROSE } from "../constants/categories";
+import { useTransactionsContext } from "../context/TransactionsContext";
 
 const tooltipStyle = {
   backgroundColor: "rgba(255, 255, 255, 0.95)",
@@ -21,20 +22,25 @@ const tooltipStyle = {
   padding: "8px 12px",
 };
 
-export default function Dashboard({ weeks }) {
-  const todas = weeks.flatMap((w) => w.transacoes);
+export default function Dashboard() {
+  const { weeks = [] } = useTransactionsContext();
+
+  const todas = useMemo(() => {
+    return (weeks || []).flatMap((w) => w.transacoes || []);
+  }, [weeks]);
+
   const { entradas, saidas, saldo } = useMemo(() => totals(todas), [todas]);
 
   const barData = useMemo(() => 
-    weeks.map((w) => {
-      const t = totals(w.transacoes);
+    (weeks || []).map((w) => {
+      const t = totals(w.transacoes || []);
       return { periodo: w.label, Entradas: t.entradas, Saídas: t.saidas };
     }), [weeks]);
 
   const lineData = useMemo(() => {
     let acumulado = 0;
-    return weeks.map((w) => {
-      const t = totals(w.transacoes);
+    return (weeks || []).map((w) => {
+      const t = totals(w.transacoes || []);
       acumulado += t.saldo;
       return { periodo: w.label, Saldo: acumulado };
     });
@@ -43,8 +49,8 @@ export default function Dashboard({ weeks }) {
   const pieData = useMemo(() => categoriaDist(todas), [todas]);
 
   const comparacao = useMemo(() => {
-    const primeiraQuinzenaTxs = weeks.slice(0, 2).flatMap(w => w.transacoes);
-    const segundaQuinzenaTxs = weeks.slice(2, 4).flatMap(w => w.transacoes);
+    const primeiraQuinzenaTxs = (weeks || []).slice(0, 2).flatMap(w => w.transacoes || []);
+    const segundaQuinzenaTxs = (weeks || []).slice(2, 4).flatMap(w => w.transacoes || []);
     const totaisQ1 = totals(primeiraQuinzenaTxs);
     const totaisQ2 = totals(segundaQuinzenaTxs);
 

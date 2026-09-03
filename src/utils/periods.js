@@ -1,44 +1,92 @@
-const getWeekOfMonth = (date) => {
-  const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  return Math.ceil((date.getDate() + firstDay) / 7);
-};
+function getStartOfWeek(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay();
+  const diff = d.getDate() - day;
+  return new Date(d.setDate(diff));
+}
 
-export const groupTransactionsByWeek = (transactions) => {
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
+function formatShortDate(date) {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${day}/${month}`;
+}
 
-  const weeks = [
-    { label: 'Semana 1', transacoes: [] },
-    { label: 'Semana 2', transacoes: [] },
-    { label: 'Semana 3', transacoes: [] },
-    { label: 'Semana 4', transacoes: [] },
-    { label: 'Semana 5', transacoes: [] },
-  ].filter((_, i) => new Date(currentYear, currentMonth, i * 7 + 1).getMonth() === currentMonth);
+/**
+ * @param {Array} transactions 
+ * @param {string} frequency 
+ * @returns {Array} 
+ */
+export function groupTransactionsByPeriod(transactions, frequency) {
+  if (!transactions || transactions.length === 0) {
+    return [];
+  }
 
-  transactions.forEach(tx => {
-    const txDate = new Date(tx.date);
-    if (txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear) {
-      const weekNum = getWeekOfMonth(txDate);
-      if (weeks[weekNum - 1]) {
-        weeks[weekNum - 1].transacoes.push(tx);
+  const periods = {};
+
+  transactions.forEach((transaction) => {
+    const rawDate = transaction.date || transaction.data;
+    if (!rawDate) return;
+
+    const transactionDate = new Date(`${rawDate}T00:00:00`);
+    const year = transactionDate.getFullYear();
+    const month = transactionDate.getMonth();
+    const dayOfMonth = transactionDate.getDate();
+
+    let periodId = '';
+    let periodLabel = '';
+    let periodRange = '';
+
+    if (frequency === 'semanal') {
+      const startOfWeek = getStartOfWeek(transactionDate);
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+      const firstDayOfYear = new Date(year, 0, 1);
+      const pastDaysOfYear = (startOfWeek - firstDayOfYear) / 86400000;
+      const weekNumber = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+
+      periodId = `${year}-W${String(weekNumber).padStart(2, '0')}`;
+      periodLabel = `Semana ${weekNumber}`;
+      periodRange = `${formatShortDate(startOfWeek)} - ${formatShortDate(endOfWeek)}`;
+    } else if (frequency === 'quinzenal') {
+      const monthStr = String(month + 1).padStart(2, '0');
+      const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+      if (dayOfMonth <= 15) {
+        periodId = `${year}-${monthStr}-Q1`;
+        periodLabel = `1ª Quinzena`;
+        periodRange = `01/${monthStr} - 15/${monthStr}`;
+      } else {
+        periodId = `${year}-${monthStr}-Q2`;
+        periodLabel = `2ª Quinzena`;
+        periodRange = `16/${monthStr} - ${lastDayOfMonth}/${monthStr}`;
       }
     }
+
+    if (!periodId) return;
+
+    if (!periods[periodId]) {
+      periods[periodId] = {
+        id: periodId,
+        label: periodLabel,
+        periodo: periodRange,
+        transacoes: [],
+      };
+    }
+    periods[periodId].transacoes.push(transaction);
   });
 
-  return weeks;
-};
+  return Object.values(periods).sort((a, b) => b.id.localeCompare(a.id));
+}
 
-export const groupTransactionsByBiweekly = (transactions) => {
-  const quinzenas = [
-    { label: '1ª Quinzena', transacoes: [] },
-    { label: '2ª Quinzena', transacoes: [] },
-  ];
+export function groupTransactionsByWeekly(transactions) {
+  return groupTransactionsByPeriod(transactions, 'semanal');
+}
 
-  transactions.forEach(tx => {
-    const txDate = new Date(tx.date);
-    txDate.getDate() <= 15 ? quinzenas[0].transacoes.push(tx) : quinzenas[1].transacoes.push(tx);
-  });
+export function groupTransactionsByWeek(transactions) {
+  return groupTransactionsByPeriod(transactions, 'semanal');
+}
 
-  return quinzenas;
-};
+export function groupTransactionsByBiweekly(transactions) {
+  return groupTransactionsByPeriod(transactions, 'quinzenal');
+}
