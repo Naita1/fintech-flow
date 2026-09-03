@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 import authRoutes from './routes/authRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
@@ -20,6 +22,16 @@ const isProduction = process.env.NODE_ENV === 'production';
 if (isProduction) {
   app.set('trust proxy', 1);
 }
+
+app.use(helmet());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 300, 
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
 
 const allowedOrigins = [process.env.FRONTEND_URL].filter(Boolean);
 
@@ -50,15 +62,12 @@ app.use((err, req, res, next) => {
   console.error('ERROR ', err);
 
   const statusCode = err.statusCode || 500;
-  const message = err.message || 'Erro interno do servidor.';
 
-  try {
-    return res.status(statusCode).json({
-      error: message,
-    });
-  } catch (error) {
-    return res.status(500).json({ error: 'Ocorreu um erro crítico no servidor.' });
-  }
+  const message = (isProduction && statusCode === 500)
+    ? 'Ocorreu um erro interno no servidor.'
+    : err.message || 'Erro interno no servidor.';
+
+  return res.status(statusCode).json({ error: message });
 });
 
 app.listen(PORT, () => {
