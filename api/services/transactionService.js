@@ -1,6 +1,18 @@
 import pool from '../config/database.js';
 import AppError from '../../src/utils/AppError.js';
 
+function normalizeFrequency(freq) {
+  const map = {
+    semanal: 'weekly',
+    quinzenal: 'biweekly',
+    mensal: 'monthly',
+    weekly: 'weekly',
+    biweekly: 'biweekly',
+    monthly: 'monthly'
+  };
+  return map[freq?.toLowerCase()] || 'monthly';
+}
+
 export async function getAllTransactions(userId, queryParams = {}) {
   const { month, year } = queryParams;
   let query = 'SELECT * FROM transactions WHERE user_id = $1';
@@ -20,6 +32,8 @@ export async function getAllTransactions(userId, queryParams = {}) {
 export async function createTransaction(userId, transactionData) {
   const { description, amount, type, category, frequency, date, observation } = transactionData;
 
+  const validFrequency = normalizeFrequency(frequency);
+
   const { rows } = await pool.query(
     `INSERT INTO transactions (user_id, description, amount, type, category, frequency, date, observation) 
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
@@ -30,7 +44,7 @@ export async function createTransaction(userId, transactionData) {
       amount,
       type,
       category,
-      frequency || 'once', 
+      validFrequency,
       date,
       observation || null
     ]
@@ -40,6 +54,8 @@ export async function createTransaction(userId, transactionData) {
 
 export async function updateTransaction(userId, transactionId, transactionData) {
   const { description, amount, type, category, frequency, date, observation } = transactionData;
+
+  const validFrequency = normalizeFrequency(frequency);
 
   const { rows, rowCount } = await pool.query(
     `UPDATE transactions 
@@ -51,7 +67,7 @@ export async function updateTransaction(userId, transactionId, transactionData) 
       amount,
       type,
       category,
-      frequency || 'once',
+      validFrequency,
       date,
       observation || null,
       transactionId,
