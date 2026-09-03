@@ -3,25 +3,54 @@ import { Building2, ChevronDown } from "lucide-react";
 import CategoriaBadge from "../components/ui/CategoriaBadge";
 import { totals } from "../utils/calculations";
 import { fmtBRL } from "../utils/format";
+import { useTransactionsContext } from "../context/TransactionsContext";
 
-export default function FinancialReport({ weeks, quinzenas }) {
+export default function FinancialReport({ weeks: propsWeeks, quinzenas: propsQuinzenas }) {
+  const context = useTransactionsContext() || {};
+  const weeks = Array.isArray(propsWeeks) ? propsWeeks : Array.isArray(context.weeks) ? context.weeks : [];
+  const quinzenas = Array.isArray(propsQuinzenas) ? propsQuinzenas : Array.isArray(context.quinzenas) ? context.quinzenas : [];
+
   const allPeriods = [...weeks, ...quinzenas];
-  const [selectedId, setSelectedId] = useState(weeks[0].id);
-  const period = allPeriods.find((p) => p.id === selectedId);
 
-  const sorted = [...period.transacoes].sort((a, b) => {
-    const [da, ma] = a.data.split("/");
-    const [db, mb] = b.data.split("/");
-    return ma === mb ? da - db : ma - mb;
+  const [selectedId, setSelectedId] = useState(() => allPeriods[0]?.id || "");
+
+  const period = allPeriods.find((p) => p.id === selectedId) || allPeriods[0];
+
+  if (!period) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-8 text-center text-slate-500 font-medium bg-white rounded-2xl border border-slate-200 shadow-sm">
+        Nenhum período disponível para exibição no relatório.
+      </div>
+    );
+  }
+
+  const sorted = [...(period.transacoes || [])].sort((a, b) => {
+    const rawA = a.data || a.date || "";
+    const rawB = b.data || b.date || "";
+    const dateA = rawA.includes("-") ? new Date(rawA) : new Date(rawA.split("/").reverse().join("-"));
+    const dateB = rawB.includes("-") ? new Date(rawB) : new Date(rawB.split("/").reverse().join("-"));
+    return dateA - dateB;
   });
 
   let saldoCorrido = 0;
   const linhas = sorted.map((t) => {
-    saldoCorrido += t.tipo === "entrada" ? t.valor : -t.valor;
-    return { ...t, saldoCorrido };
+    const valor = Number(t.valor ?? t.amount) || 0;
+    const isEntrada = t.tipo === "entrada" || t.type === "income";
+    saldoCorrido += isEntrada ? valor : -valor;
+
+    return {
+      ...t,
+      id: t.id,
+      data: t.data || t.date || "",
+      descricao: t.descricao || t.description || "Sem descrição",
+      categoria: t.categoria || t.category || "Geral",
+      tipo: isEntrada ? "entrada" : "saida",
+      valor,
+      saldoCorrido
+    };
   });
 
-  const { entradas, saidas, saldo } = totals(period.transacoes);
+  const { entradas, saidas, saldo } = totals(period.transacoes || []);
 
   return (
     <div className="space-y-5 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-300 motion-reduce:animate-none">
@@ -33,7 +62,7 @@ export default function FinancialReport({ weeks, quinzenas }) {
         
         <div className="relative shrink-0">
           <select
-            value={selectedId}
+            value={selectedId || period.id}
             onChange={(e) => setSelectedId(e.target.value)}
             className="w-full min-h-11 appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-3.5 pr-10 text-[16px] sm:text-sm font-medium text-slate-700 outline-none select-none
               transition-all duration-150 ease-out

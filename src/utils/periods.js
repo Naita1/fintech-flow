@@ -1,12 +1,48 @@
+function parseDate(rawDate) {
+  if (!rawDate) return null;
+  if (rawDate instanceof Date) return isNaN(rawDate.getTime()) ? null : rawDate;
+
+  const str = String(rawDate).trim();
+
+  if (str.includes('-')) {
+    const clean = str.split('T')[0];
+    const parts = clean.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+        return new Date(year, month, day);
+      }
+    }
+  }
+
+  if (str.includes('/')) {
+    const parts = str.split('/');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const year = parseInt(parts[2], 10);
+      if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+        return new Date(year, month, day);
+      }
+    }
+  }
+
+  const d = new Date(str);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 function getStartOfWeek(date) {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
   const day = d.getDay();
   const diff = d.getDate() - day;
-  return new Date(d.setDate(diff));
+  return new Date(d.getFullYear(), d.getMonth(), diff);
 }
 
 function formatShortDate(date) {
+  if (!date || isNaN(date.getTime())) return '--/--';
   const day = String(date.getDate()).padStart(2, '0');
   const month = String(date.getMonth() + 1).padStart(2, '0');
   return `${day}/${month}`;
@@ -26,9 +62,10 @@ export function groupTransactionsByPeriod(transactions, frequency) {
 
   transactions.forEach((transaction) => {
     const rawDate = transaction.date || transaction.data;
-    if (!rawDate) return;
+    const transactionDate = parseDate(rawDate);
 
-    const transactionDate = new Date(`${rawDate}T00:00:00`);
+    if (!transactionDate) return;
+
     const year = transactionDate.getFullYear();
     const month = transactionDate.getMonth();
     const dayOfMonth = transactionDate.getDate();
@@ -44,7 +81,7 @@ export function groupTransactionsByPeriod(transactions, frequency) {
 
       const firstDayOfYear = new Date(year, 0, 1);
       const pastDaysOfYear = (startOfWeek - firstDayOfYear) / 86400000;
-      const weekNumber = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+      const weekNumber = Math.max(1, Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7));
 
       periodId = `${year}-W${String(weekNumber).padStart(2, '0')}`;
       periodLabel = `Semana ${weekNumber}`;
