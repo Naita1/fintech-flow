@@ -34,7 +34,6 @@ export default function PeriodControlView({
     if (typeof onAddTransaction === "function") {
       onAddTransaction({
         ...data,
-        frequencia: frequenciaPadrao,
         frequency: frequenciaPadrao === "quinzenal" ? "biweekly" : "weekly",
       });
     }
@@ -44,7 +43,6 @@ export default function PeriodControlView({
     if (typeof onUpdateTransaction === "function") {
       onUpdateTransaction({
         ...data,
-        frequencia: frequenciaPadrao,
         frequency: frequenciaPadrao === "quinzenal" ? "biweekly" : "weekly",
       });
     }
