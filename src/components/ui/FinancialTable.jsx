@@ -36,8 +36,7 @@ export default function FinancialTable({ transacoes, onDeleteTransaction, onUpda
   };
 
   const checkIsIncome = (t) => {
-    const rawType = String(t.type || t.tipo || "").toLowerCase();
-    return rawType === "income" || rawType === "entrada" || rawType === "receita";
+    return t.type === "income";
   };
 
   if (!transacoes || transacoes.length === 0) {
@@ -73,16 +72,16 @@ export default function FinancialTable({ transacoes, onDeleteTransaction, onUpda
                   className="transition-colors duration-150 ease-out hover:bg-slate-50/80"
                 >
                   <td className="whitespace-nowrap px-5 py-3.5 font-mono text-xs text-slate-500">
-                    {formatDate(t.data || t.date)}
+                    {formatDate(t.date)}
                   </td>
                   <td className="px-5 py-3.5">
-                    <p className="font-medium text-slate-700">{t.descricao || t.description}</p>
-                    {(t.observacao || t.observation) && (
-                      <p className="mt-0.5 text-xs text-slate-400">{t.observacao || t.observation}</p>
+                    <p className="font-medium text-slate-700">{t.description}</p>
+                    {t.observation && (
+                      <p className="mt-0.5 text-xs text-slate-400">{t.observation}</p>
                     )}
                   </td>
                   <td className="whitespace-nowrap px-5 py-3.5">
-                    <CategoriaBadge categoria={t.categoria || t.category} />
+                    <CategoriaBadge categoria={t.category} />
                   </td>
                   <td className="whitespace-nowrap px-5 py-3.5">
                     <TipoBadge tipo={isIncome ? "entrada" : "saida"} />
@@ -93,7 +92,7 @@ export default function FinancialTable({ transacoes, onDeleteTransaction, onUpda
                     }`}
                   >
                     {isIncome ? "+ " : "- "}
-                    {fmtBRL(t.valor || t.amount)}
+                    {fmtBRL(t.amount)}
                   </td>
                   <td className="whitespace-nowrap px-5 py-3.5 text-center">
                     <button
@@ -128,18 +127,18 @@ export default function FinancialTable({ transacoes, onDeleteTransaction, onUpda
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs text-slate-400">
-                    {formatDate(t.data || t.date)}
+                    {formatDate(t.date)}
                   </span>
                 </div>
-                <p className="mt-0.5 truncate font-medium text-slate-700">{t.descricao || t.description}</p>
+                <p className="mt-0.5 truncate font-medium text-slate-700">{t.description}</p>
 
                 <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                  <CategoriaBadge categoria={t.categoria || t.category} />
+                  <CategoriaBadge categoria={t.category} />
                   <TipoBadge tipo={isIncome ? "entrada" : "saida"} />
                 </div>
 
-                {(t.observacao || t.observation) && (
-                  <p className="mt-1.5 text-xs text-slate-400 line-clamp-2">{t.observacao || t.observation}</p>
+                {t.observation && (
+                  <p className="mt-1.5 text-xs text-slate-400 line-clamp-2">{t.observation}</p>
                 )}
               </div>
 
@@ -150,7 +149,7 @@ export default function FinancialTable({ transacoes, onDeleteTransaction, onUpda
                   }`}
                 >
                   {isIncome ? "+ " : "- "}
-                  {fmtBRL(t.valor || t.amount)}
+                  {fmtBRL(t.amount)}
                 </p>
                 <div className="flex items-center gap-1">
                   <button
