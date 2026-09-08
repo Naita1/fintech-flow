@@ -10,11 +10,11 @@ export default function ChartCard({ title, subtitle, children }) {
       "
     >
       <div className="mb-1 border-b border-dashed border-slate-200 pb-3">
-        <h3 className="text-sm font-semibold text-slate-700 truncate" title={title}>
+        <h3 className="text-sm font-semibold text-slate-700 truncate" title={typeof title === 'string' ? title : undefined}>
           {title}
         </h3>
         {subtitle && (
-          <p className="mt-0.5 text-xs text-slate-400 truncate" title={subtitle}>
+          <p className="mt-0.5 text-xs text-slate-400 truncate" title={typeof subtitle === 'string' ? subtitle : undefined}>
             {subtitle}
           </p>
         )}

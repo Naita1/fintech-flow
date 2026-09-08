@@ -6,9 +6,9 @@ export default function EditTransactionModal({ isOpen, onClose, transaction, onS
   if (!isOpen || !transaction) return null;
 
   const handleSave = (formData) => {
-    const id = transaction.id || transaction._id;
+    const id = transaction.id;
     
-    if (onSave) {
+    if (typeof onSave === 'function') {
       onSave({ ...formData, id });
     }
     

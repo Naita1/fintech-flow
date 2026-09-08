@@ -28,9 +28,13 @@ export default function Header({ title, onMenuClick, user, onLogout }) {
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="hidden sm:flex items-center gap-2 text-right">
-            <span className="text-sm font-semibold text-slate-700">{user.name}</span>
-            <span className="text-xs text-slate-400">{user.email}</span>
+        <div className="hidden sm:flex flex-col items-end text-right">
+          <span className="text-sm font-semibold text-slate-700 truncate max-w-37.5">
+            {user?.name}
+          </span>
+          <span className="text-xs text-slate-400 truncate max-w-37.5">
+            {user?.email}
+          </span>
         </div>
         <button
           type="button"

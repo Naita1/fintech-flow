@@ -1,7 +1,8 @@
 import { CATEGORIA_COR } from "../../constants/categories";
 
 export default function CategoriaBadge({ categoria }) {
-  const c = CATEGORIA_COR[categoria] || {
+  const safeCategoria = categoria || "Outros";
+  const c = CATEGORIA_COR[safeCategoria] || {
     bg: "bg-slate-100",
     text: "text-slate-600",
     dot: "bg-slate-400",
@@ -19,7 +20,7 @@ export default function CategoriaBadge({ categoria }) {
       `}
     >
       <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${c.dot}`} />
-      {categoria}
+      {safeCategoria}
     </span>
   );
 }

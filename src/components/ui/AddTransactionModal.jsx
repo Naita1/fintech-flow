@@ -2,13 +2,12 @@ import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import TransactionForm from './TransactionForm';
 
-export default function AddTransactionModal({ isOpen, onClose, onSave, onAddTransaction, onSubmit }) {
+export default function AddTransactionModal({ isOpen, onClose, onSave }) {
   if (!isOpen) return null;
 
   const handleSave = (formData) => {
-    const saveFn = onSave || onAddTransaction || onSubmit;
-    if (typeof saveFn === 'function') {
-      saveFn(formData);
+    if (typeof onSave === 'function') {
+      onSave(formData);
     }
     onClose();
   };
