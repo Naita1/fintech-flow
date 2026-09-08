@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import TransactionForm from '../components/ui/TransactionForm';
+import TransactionForm from './TransactionForm';
 
 export default function AddTransactionModal({ isOpen, onClose, onSave, onAddTransaction, onSubmit }) {
   if (!isOpen) return null;

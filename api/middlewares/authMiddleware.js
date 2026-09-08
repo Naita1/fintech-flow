@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { promisify } from 'util';
 import pool from '../config/database.js'; 
-import AppError from '../../src/utils/AppError.js';
+import AppError from '../utils/AppError.js';
 
 export const authMiddleware = async (req, res, next) => {
   try {
@@ -13,7 +13,7 @@ export const authMiddleware = async (req, res, next) => {
 
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
-    const { rows } = await pool.query('SELECT id, name, email FROM users WHERE id = $1', [decoded.id]);
+    const { rows } = await pool.query('SELECT id, name, email FROM users WHERE id = $1 AND deleted_at IS NULL', [decoded.id]);
     const currentUser = rows[0];
 
     if (!currentUser) {

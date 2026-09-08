@@ -1,10 +1,9 @@
 const parseTx = (t) => {
-  const type = String(t.tipo || t.type || '').toLowerCase().trim();
-  const rawAmount = t.valor ?? t.amount ?? 0;
-  const amount = typeof rawAmount === 'number' ? rawAmount : parseFloat(rawAmount) || 0;
-  const category = t.categoria || t.category || 'Outros';
-
-  return { type, amount, category };
+  return {
+    type: t.type || '',
+    amount: t.amount || 0,
+    category: t.category || 'Outros'
+  };
 };
 
 export const totals = (transacoes = []) => {
@@ -14,9 +13,9 @@ export const totals = (transacoes = []) => {
     (acc, t) => {
       const { type, amount } = parseTx(t);
 
-      if (type === 'entrada' || type === 'income') {
+      if (type === 'income') {
         acc.entradas += amount;
-      } else if (type === 'saida' || type === 'expense') {
+      } else if (type === 'expense') {
         acc.saidas += amount;
       }
 
@@ -35,7 +34,7 @@ export const categoriaDist = (transacoes = []) => {
   transacoes.forEach((t) => {
     const { type, amount, category } = parseTx(t);
 
-    if (type === 'saida' || type === 'expense') {
+    if (type === 'expense') {
       map[category] = (map[category] || 0) + amount;
     }
   });

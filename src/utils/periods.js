@@ -12,19 +12,7 @@ function parseDate(rawDate) {
       const month = parseInt(parts[1], 10) - 1;
       const day = parseInt(parts[2], 10);
       if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
-        return new Date(year, month, day);
-      }
-    }
-  }
-
-  if (str.includes('/')) {
-    const parts = str.split('/');
-    if (parts.length === 3) {
-      const day = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1;
-      const year = parseInt(parts[2], 10);
-      if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
-        return new Date(year, month, day);
+        return new Date(year, month, day, 12, 0, 0);
       }
     }
   }
@@ -38,7 +26,8 @@ function getStartOfWeek(date) {
   d.setHours(0, 0, 0, 0);
   const day = d.getDay();
   const diff = d.getDate() - day;
-  return new Date(d.getFullYear(), d.getMonth(), diff);
+  
+  return new Date(d.getFullYear(), d.getMonth(), diff, 12, 0, 0);
 }
 
 function formatShortDate(date) {
@@ -48,11 +37,6 @@ function formatShortDate(date) {
   return `${day}/${month}`;
 }
 
-/**
- * @param {Array} transactions 
- * @param {string} frequency 
- * @returns {Array} 
- */
 export function groupTransactionsByPeriod(transactions, frequency) {
   if (!transactions || transactions.length === 0) {
     return [];
@@ -61,7 +45,7 @@ export function groupTransactionsByPeriod(transactions, frequency) {
   const periods = {};
 
   transactions.forEach((transaction) => {
-    const rawDate = transaction.date || transaction.data;
+    const rawDate = transaction.date;
     const transactionDate = parseDate(rawDate);
 
     if (!transactionDate) return;
@@ -117,10 +101,6 @@ export function groupTransactionsByPeriod(transactions, frequency) {
 }
 
 export function groupTransactionsByWeekly(transactions) {
-  return groupTransactionsByPeriod(transactions, 'semanal');
-}
-
-export function groupTransactionsByWeek(transactions) {
   return groupTransactionsByPeriod(transactions, 'semanal');
 }
 

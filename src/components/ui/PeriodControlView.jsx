@@ -4,7 +4,7 @@ import PeriodSelector from "./PeriodSelector";
 import SummaryCard from "./SummaryCard";
 import ProfitLossIndicator from "./ProfitLossIndicator";
 import FinancialTable from "./FinancialTable";
-import AddTransactionModal from "../../constants/AddTransactionModal";
+import AddTransactionModal from "./AddTransactionModal";
 import { totals } from "../../utils/calculations";
 import { fmtBRL } from "../../utils/format";
 

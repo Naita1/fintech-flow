@@ -10,10 +10,11 @@ import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/authRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
 import { authMiddleware } from './middlewares/authMiddleware.js';
+import { errorHandler } from './middlewares/errorHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -58,17 +59,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', authMiddleware, transactionRoutes); 
 
-app.use((err, req, res, next) => {
-  console.error('ERROR ', err);
-
-  const statusCode = err.statusCode || 500;
-
-  const message = (isProduction && statusCode === 500)
-    ? 'Ocorreu um erro interno no servidor.'
-    : err.message || 'Erro interno no servidor.';
-
-  return res.status(statusCode).json({ error: message });
-});
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);

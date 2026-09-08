@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
 
 const AuthContext = createContext(null);
 
@@ -7,6 +7,17 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      setUser(null);
+    };
+
+    window.addEventListener('session-expired', handleSessionExpired);
+    return () => {
+      window.removeEventListener('session-expired', handleSessionExpired);
+    };
+  }, []);
 
   useEffect(() => {
     fetch(`${API_URL}/api/auth/me`, {
@@ -27,7 +38,7 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     const res = await fetch(`${API_URL}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -41,13 +52,12 @@ export function AuthProvider({ children }) {
     }
     
     const data = await res.json();
-    
     const userData = data.user || { id: data.id, name: data.name, email: data.email };
     setUser(userData);
     return data;
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await fetch(`${API_URL}/api/auth/logout`, { 
         method: "POST", 
@@ -58,10 +68,12 @@ export function AuthProvider({ children }) {
     } finally {
       setUser(null);
     }
-  };
+  }, []);
+
+  const value = useMemo(() => ({ user, loading, login, logout }), [user, loading, login, logout]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

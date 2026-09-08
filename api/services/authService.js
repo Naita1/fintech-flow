@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import pool from '../config/database.js';
-import AppError from '../../src/utils/AppError.js';
+import AppError from '../utils/AppError.js';
 
 export async function loginUser(email, password) {
   if (!email || !password) {
@@ -13,7 +13,7 @@ export async function loginUser(email, password) {
     throw new AppError('Erro de configuração no servidor de autenticação.', 500);
   }
 
-  const { rows } = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+  const { rows } = await pool.query('SELECT * FROM users WHERE email = $1 AND deleted_at IS NULL', [email]);
   const user = rows[0];
 
   if (!user) {

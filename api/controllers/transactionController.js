@@ -9,6 +9,15 @@ export async function getTransactions(req, res, next) {
   }
 }
 
+export async function getSummary(req, res, next) {
+  try {
+    const summary = await transactionService.getTransactionSummary(req.user.id, req.query);
+    res.status(200).json(summary);
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function addTransaction(req, res, next) {
   try {
     const newTransaction = await transactionService.createTransaction(req.user.id, req.body);

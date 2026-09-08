@@ -38,7 +38,7 @@ export function TransactionsProvider({ children }) {
 
   const quinzenas = useMemo(() => groupTransactionsByBiweekly(biweeklyTransactions), [biweeklyTransactions]);
 
-  const value = {
+  const value = useMemo(() => ({
     transactions, 
     weeks,
     quinzenas,
@@ -48,7 +48,7 @@ export function TransactionsProvider({ children }) {
     deleteTransaction,
     updateTransaction,
     refetch,
-  };
+  }), [transactions, weeks, quinzenas, loading, error, addTransaction, deleteTransaction, updateTransaction, refetch]);
 
   return (
     <TransactionsContext.Provider value={value}>

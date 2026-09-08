@@ -16,16 +16,18 @@ export const parseLocalDate = (dateString) => {
   return new Date(dateString);
 };
 
+const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
 export const formatDate = (dateString) => {
   if (!dateString) return '-';
 
   const date = parseLocalDate(dateString);
   if (isNaN(date.getTime())) return dateString;
 
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(date);
+  return dateFormatter.format(date);
 };
