@@ -23,7 +23,7 @@ const tooltipStyle = {
 };
 
 export default function Dashboard() {
-  const { weeks = [] } = useTransactionsContext();
+  const { weeks = [], quinzenas = [] } = useTransactionsContext();
 
   const todas = useMemo(() => {
     return (weeks || []).flatMap((w) => w.transacoes || []);
@@ -31,34 +31,28 @@ export default function Dashboard() {
 
   const { entradas, saidas, saldo } = useMemo(() => totals(todas), [todas]);
 
-  const barData = useMemo(() => 
-    (weeks || []).map((w) => {
-      const t = totals(w.transacoes || []);
-      return { periodo: w.label, Entradas: t.entradas, Saídas: t.saidas };
-    }), [weeks]);
-
-  const lineData = useMemo(() => {
+  const chartData = useMemo(() => {
     let acumulado = 0;
-    return (weeks || []).map((w) => {
+    return [...weeks].reverse().map((w) => {
       const t = totals(w.transacoes || []);
       acumulado += t.saldo;
-      return { periodo: w.label, Saldo: acumulado };
+      return { 
+        periodo: w.label, 
+        Entradas: t.entradas, 
+        Saídas: t.saidas, 
+        Saldo: acumulado 
+      };
     });
   }, [weeks]);
 
   const pieData = useMemo(() => categoriaDist(todas), [todas]);
 
   const comparacao = useMemo(() => {
-    const primeiraQuinzenaTxs = (weeks || []).slice(0, 2).flatMap(w => w.transacoes || []);
-    const segundaQuinzenaTxs = (weeks || []).slice(2, 4).flatMap(w => w.transacoes || []);
-    const totaisQ1 = totals(primeiraQuinzenaTxs);
-    const totaisQ2 = totals(segundaQuinzenaTxs);
-
-    return [
-      { periodo: "1ª Quinzena", Entradas: totaisQ1.entradas, Saídas: totaisQ1.saidas, Saldo: totaisQ1.saldo },
-      { periodo: "2ª Quinzena", Entradas: totaisQ2.entradas, Saídas: totaisQ2.saidas, Saldo: totaisQ2.saldo },
-    ];
-  }, [weeks]);
+    return [...quinzenas].slice(0, 2).reverse().map((q) => {
+      const t = totals(q.transacoes || []);
+      return { periodo: q.label, Entradas: t.entradas, Saídas: t.saidas, Saldo: t.saldo };
+    });
+  }, [quinzenas]);
 
   return (
     <div className="space-y-6 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-300 motion-reduce:animate-none">
@@ -79,9 +73,9 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       
         <ChartCard title="Entradas x Saídas" subtitle="Comparativo semanal do mês atual">
-          <div className="w-full h-65 sm:h-70">
+          <div className="w-full h-64 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="periodo" tick={{ fontSize: 11, fill: "#64748b" }} axisLine={{ stroke: "#cbd5e1" }} />
                 <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
@@ -95,9 +89,9 @@ export default function Dashboard() {
         </ChartCard>
 
         <ChartCard title="Evolução do Saldo" subtitle="Saldo acumulado semana a semana">
-          <div className="w-full h-65 sm:h-70">
+          <div className="w-full h-64 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={lineData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="periodo" tick={{ fontSize: 11, fill: "#64748b" }} axisLine={{ stroke: "#cbd5e1" }} />
                 <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
@@ -116,7 +110,7 @@ export default function Dashboard() {
           </div>
         </ChartCard>
         <ChartCard title="Distribuição dos Gastos" subtitle="Saídas por categoria no mês">
-          <div className="w-full h-65 sm:h-70">
+          <div className="w-full h-64 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                 <Pie 
@@ -140,7 +134,7 @@ export default function Dashboard() {
         </ChartCard>
 
         <ChartCard title="Comparação entre Períodos" subtitle="1ª quinzena x 2ª quinzena">
-          <div className="w-full h-65 sm:h-70">
+          <div className="w-full h-64 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={comparacao} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />

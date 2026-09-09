@@ -3,12 +3,11 @@ import { Building2, ChevronDown } from "lucide-react";
 import CategoriaBadge from "../components/ui/CategoriaBadge";
 import { totals } from "../utils/calculations";
 import { fmtBRL } from "../utils/format";
+import { formatDate } from "../utils/formatDate";
 import { useTransactionsContext } from "../context/TransactionsContext";
 
-export default function FinancialReport({ weeks: propsWeeks, quinzenas: propsQuinzenas }) {
-  const context = useTransactionsContext() || {};
-  const weeks = Array.isArray(propsWeeks) ? propsWeeks : Array.isArray(context.weeks) ? context.weeks : [];
-  const quinzenas = Array.isArray(propsQuinzenas) ? propsQuinzenas : Array.isArray(context.quinzenas) ? context.quinzenas : [];
+export default function FinancialReport() {
+  const { weeks = [], quinzenas = [] } = useTransactionsContext();
 
   const allPeriods = [...weeks, ...quinzenas];
 
@@ -25,27 +24,16 @@ export default function FinancialReport({ weeks: propsWeeks, quinzenas: propsQui
   }
 
   const sorted = [...(period.transacoes || [])].sort((a, b) => {
-    const rawA = a.data || a.date || "";
-    const rawB = b.data || b.date || "";
-    const dateA = rawA.includes("-") ? new Date(rawA) : new Date(rawA.split("/").reverse().join("-"));
-    const dateB = rawB.includes("-") ? new Date(rawB) : new Date(rawB.split("/").reverse().join("-"));
-    return dateA - dateB;
+    return String(a.date).localeCompare(String(b.date));
   });
 
   let saldoCorrido = 0;
   const linhas = sorted.map((t) => {
-    const valor = Number(t.valor ?? t.amount) || 0;
-    const isEntrada = t.tipo === "entrada" || t.type === "income";
-    saldoCorrido += isEntrada ? valor : -valor;
+    const isIncome = t.type === "income";
+    saldoCorrido += isIncome ? t.amount : -t.amount;
 
     return {
       ...t,
-      id: t.id,
-      data: t.data || t.date || "",
-      descricao: t.descricao || t.description || "Sem descrição",
-      categoria: t.categoria || t.category || "Geral",
-      tipo: isEntrada ? "entrada" : "saida",
-      valor,
       saldoCorrido
     };
   });
@@ -118,14 +106,14 @@ export default function FinancialReport({ weeks: propsWeeks, quinzenas: propsQui
             <tbody className="divide-y divide-slate-100">
               {linhas.map((t) => (
                 <tr key={t.id} className="hover:bg-slate-50/80 transition-colors duration-150 ease-out">
-                  <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-slate-500">{t.data}</td>
-                  <td className="px-4 py-3 font-medium text-slate-800">{t.descricao}</td>
-                  <td className="px-4 py-3 whitespace-nowrap"><CategoriaBadge categoria={t.categoria} /></td>
+                  <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-slate-500">{formatDate(t.date)}</td>
+                  <td className="px-4 py-3 font-medium text-slate-800">{t.description}</td>
+                  <td className="px-4 py-3 whitespace-nowrap"><CategoriaBadge categoria={t.category} /></td>
                   <td className="whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums text-emerald-600 font-semibold">
-                    {t.tipo === "entrada" ? fmtBRL(t.valor) : "—"}
+                    {t.type === "income" ? fmtBRL(t.amount) : "—"}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums text-rose-600 font-semibold">
-                    {t.tipo === "saida" ? fmtBRL(t.valor) : "—"}
+                    {t.type === "expense" ? fmtBRL(t.amount) : "—"}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right font-mono font-bold tabular-nums text-slate-700">
                     {fmtBRL(t.saldoCorrido)}
@@ -150,17 +138,17 @@ export default function FinancialReport({ weeks: propsWeeks, quinzenas: propsQui
           {linhas.map((t) => (
             <div key={t.id} className="p-4 space-y-2.5 transition-colors duration-150 motion-safe:active:bg-slate-50">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-xs text-slate-400 font-medium">{t.data}</span>
-                <CategoriaBadge categoria={t.categoria} />
+                <span className="font-mono text-xs text-slate-400 font-medium">{formatDate(t.date)}</span>
+                <CategoriaBadge categoria={t.category} />
               </div>
               
-              <p className="font-semibold text-sm text-slate-800 leading-tight">{t.descricao}</p>
+              <p className="font-semibold text-sm text-slate-800 leading-tight">{t.description}</p>
               
               <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100/80">
                 <div className="space-y-0.5">
                   <span className="text-slate-400 block text-[11px]">Movimentação</span>
-                  <span className={`font-mono font-bold tabular-nums ${t.tipo === "entrada" ? "text-emerald-600" : "text-rose-600"}`}>
-                    {t.tipo === "entrada" ? `+ ${fmtBRL(t.valor)}` : `- ${fmtBRL(t.valor)}`}
+                  <span className={`font-mono font-bold tabular-nums ${t.type === "income" ? "text-emerald-600" : "text-rose-600"}`}>
+                    {t.type === "income" ? `+ ${fmtBRL(t.amount)}` : `- ${fmtBRL(t.amount)}`}
                   </span>
                 </div>
                 <div className="text-right space-y-0.5">

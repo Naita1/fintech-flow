@@ -5,13 +5,15 @@ export default function WeeklyFinance() {
   const { weeks, addTransaction, deleteTransaction, updateTransaction } = useTransactionsContext();
 
   return (
-    <PeriodControlView
-      periods={weeks}
-      onAddTransaction={addTransaction}
-      onDeleteTransaction={deleteTransaction}
-      onUpdateTransaction={updateTransaction}
-      tipoRotulo="da semana"
-      frequenciaPadrao="semanal"
-    />
+    <div className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-300 motion-reduce:animate-none">
+      <PeriodControlView
+        periods={weeks}
+        onAddTransaction={addTransaction}
+        onDeleteTransaction={deleteTransaction}
+        onUpdateTransaction={updateTransaction}
+        tipoRotulo="da semana"
+        frequenciaPadrao="semanal"
+      />
+    </div>
   );
 }
