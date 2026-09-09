@@ -45,53 +45,78 @@ O sistema permite o controle de movimentações financeiras, visualização por 
 
 ```text
 fintech-flow/
-├── api/                      # Backend Node.js / Express
-│   ├── config/               # Configuração do banco (db.js com SSL Neon DB)
-│   ├── controllers/          # Controladores das rotas de API
-│   ├── middlewares/          # Middlewares (autenticação JWT, validações)
-│   ├── routes/               # Definição dos endpoints REST
-│   ├── services/             # Regras de negócio e queries PostgreSQL
-│   └── server.js             # Entrada da API Express
-├── scripts/                  # Scripts SQL do banco de dados
-│   └── schema.sql            # Schema das tabelas (users, transactions)
-├── src/                      # Frontend React (Vite + Tailwind CSS)
-│   ├── components/           # Componentes de interface (layout, ui)
-│   ├── constants/            # Constantes da aplicação
-│   ├── context/              # Contextos globais (AuthContext)
-│   ├── hooks/                # Custom hooks (useTransactions)
-│   ├── utils/                # Utilitários de cálculo, formatação e períodos
-│   ├── views/                # Telas (WeeklyFinance, BiweeklyFinance, Dashboard, etc.)
-│   ├── App.jsx               # Componente raiz
-│   └── main.jsx              # Ponto de entrada do React
-├── .env                      # Variáveis de ambiente
-└── README.md                 # Documentação do projeto
+├── api/                  # Backend Node.js / Express
+│   ├── config/           # Configuração do banco (db.js com SSL Neon DB)
+│   ├── controllers/      # Controladores das rotas de API
+│   ├── middlewares/      # Middlewares (autenticação JWT, validações)
+│   ├── routes/           # Definição dos endpoints REST
+│   ├── schemas/          # Schemas de validação de payload/dados
+│   ├── services/         # Regras de negócio e queries PostgreSQL
+│   ├── utils/            # Utilitários e helpers do backend
+│   └── server.js         # Ponto de entrada da API Express
+├── scripts/              # Scripts SQL e inicialização do banco
+│   └── schema.sql        # Schema das tabelas (users, transactions)
+├── src/                  # Frontend React (Vite + Tailwind CSS)
+│   ├── components/       # Componentes de interface (layout, ui)
+│   ├── constants/        # Constantes da aplicação (categorias, rotas)
+│   ├── context/          # Contextos globais (AuthContext, TransactionsContext)
+│   ├── hooks/            # Custom hooks (useTransactions)
+│   ├── services/         # Integrações de API, adaptadores (ACL) e requisições
+│   ├── utils/            # Utilitários de cálculo, formatação e períodos
+│   ├── views/            # Telas (WeeklyFinance, BiweeklyFinance, Dashboard, etc.)
+│   ├── App.jsx           # Componente raiz com roteamento e providers
+│   ├── index.css         # Estilos globais e diretivas Tailwind CSS
+│   └── main.jsx          # Ponto de entrada da aplicação React
+├── .env                  # Variáveis de ambiente (ignorado no Git)
+├── index.html            # Template HTML da aplicação
+├── package.json          # Manifesto de dependências e scripts de build
+├── tailwind.config.js    # Configuração de temas e plugins Tailwind CSS
+├── vite.config.js        # Configuração de aliases e build do Vite
+└── README.md             # Documentação oficial do projeto
 ```
 
 ---
 
 ## 🏗️ Destaques de Engenharia
 
-### 1. Mapeamento de Domínio (PT-BR ↔ EN)
+### 1. Arquitetura Limpa e Anti-Corruption Layer (ACL)
 
-A interface trabalha com termos em Português, como:
-
-* `entrada`
-* `saída`
-* `semanal`
-* `quinzenal`
-
-Enquanto a API utiliza valores em Inglês para persistência no PostgreSQL:
-
-* `income`
-* `expense`
-* `weekly`
-* `biweekly`
-
-Essa camada de tradução mantém a experiência do usuário em Português sem comprometer a padronização dos dados no back-end.
+Para proteger a aplicação de inconsistências e código legado bilíngue, foi implementada uma **Camada Anticorrupção (ACL)** no Front-end (`transactionAdapter.js`). 
+Enquanto a interface do usuário fala estritamente Português (entradas, saídas), o contrato de dados com a API é rigidamente mapeado para o domínio em Inglês (`income`, `expense`, `weekly`). Isso garante que os componentes React sejam agnósticos à estrutura do banco de dados, promovendo um alto desacoplamento.
 
 ---
 
-### 2. PostgreSQL Serverless com Neon DB
+### 2. Performance e Code Splitting (React)
+
+Para garantir um *First Contentful Paint (FCP)* ultrarrápido, o roteamento da aplicação utiliza o padrão de **Code Splitting** com `React.lazy` e `<Suspense>`. Além disso, cálculos pesados de consolidação financeira e renderização de gráficos (Recharts) são cacheados utilizando o hook `useMemo`, evitando recálculos desnecessários durante o ciclo de vida dos componentes.
+
+---
+
+### 3. Acessibilidade (A11y) e Programação Defensiva
+
+O Front-end foi construído visando inclusão e robustez:
+* **ARIA Attributes e HTML Semântico:** Leitores de tela são guiados corretamente por *roles*, *aria-labels* e estruturas como `aria-live="polite"` durante carregamentos.
+* **Focus Trap em Modais:** Utilização do `@headlessui/react` para garantir que o foco do teclado não vaze dos modais e obedeça a tecla `ESC`.
+* **Resiliência a Falhas:** Componentes implementam *Optional Chaining*, *Default Parameters* e *Error Boundaries* naturais para evitar que a interface quebre caso a API retorne dados incompletos ou ocorram falhas de rede.
+
+---
+
+### 4. Validação de Contratos na API (Fail-Fast)
+
+O Back-end Node.js adota o princípio de *Fail-Fast*, utilizando a biblioteca **Zod** para validação estrita de esquemas na entrada das requisições. Nenhum dado malformado alcança a camada de banco de dados, garantindo a integridade financeira e retornando mensagens de erro claras e tipadas para o cliente.
+
+---
+
+### 5. Segurança e Gerenciamento de Sessão
+
+A aplicação utiliza:
+* **Bcrypt** para armazenamento seguro das senhas (Hashing com Salt).
+* **JWT (JSON Web Tokens)** para gerenciamento das sessões.
+* **Cookies HttpOnly**, mitigando completamente ataques de XSS (Cross-Site Scripting) no roubo de tokens.
+
+---
+
+### 6. PostgreSQL Serverless com Neon DB
 
 O projeto utiliza PostgreSQL hospedado através do **Neon DB**.
 
@@ -101,21 +126,7 @@ O driver `pg` possui configuração de timeout para lidar com possíveis períod
 connectionTimeoutMillis: 10000
 ```
 
----
-
-### 3. Autenticação Segura
-
-A aplicação utiliza:
-
-* **Bcrypt** para armazenamento seguro das senhas;
-* **JWT** para gerenciamento das sessões;
-* Cookies com flag **HttpOnly** para reduzir a exposição dos tokens no navegador.
-
-As credenciais e informações sensíveis são mantidas através de variáveis de ambiente.
-
----
-
-### 4. Banco Reproduzível
+### 7. Banco Reproduzível
 
 A estrutura do banco de dados está versionada no repositório através do arquivo:
 
@@ -129,7 +140,7 @@ O script cria automaticamente as tabelas necessárias e suas respectivas restri�
 
 ---
 
-### 5. Layout Responsivo
+### 8. Layout Responsivo
 
 A interface foi desenvolvida para diferentes tamanhos de tela.
 
