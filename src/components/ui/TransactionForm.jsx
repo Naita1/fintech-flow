@@ -2,82 +2,86 @@ import { useState, useEffect } from 'react';
 import { CATEGORIAS } from '../../constants/categories';
 
 export default function TransactionForm({ onSubmit, initialData = null, onCancel, submitButtonText = "Salvar" }) {
-  const [descricao, setDescricao] = useState('');
-  const [valor, setValor] = useState('');
-  const [tipo, setTipo] = useState('saida');
-  const [categoria, setCategoria] = useState(CATEGORIAS[0]?.value || 'Outros');
-  const [data, setData] = useState(new Date().toISOString().split('T')[0]);
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+  const [type, setType] = useState('expense');
+  const [category, setCategory] = useState(CATEGORIAS[0]?.value || 'Outros');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [observation, setObservation] = useState('');
 
   useEffect(() => {
     if (initialData && Object.keys(initialData).length > 0) {
-      setDescricao(initialData.descricao || initialData.description || '');
-      setValor(initialData.valor || initialData.amount || '');
-      setTipo(initialData.tipo || initialData.type || 'saida');
-      setCategoria(initialData.categoria || initialData.category || 'Outros');
-      setData((initialData.data || initialData.date || '').split('T')[0]);
+      setDescription(initialData.description || '');
+      setAmount(initialData.amount || '');
+      setType(initialData.type || 'expense');
+      setCategory(initialData.category || 'Outros');
+      setDate((initialData.date || '').split('T')[0]);
+      setObservation(initialData.observation || '');
     } else {
-      setDescricao('');
-      setValor('');
-      setTipo('saida');
-      setCategoria(CATEGORIAS[0]?.value || 'Outros');
-      setData(new Date().toISOString().split('T')[0]);
+      setDescription('');
+      setAmount('');
+      setType('expense');
+      setCategory(CATEGORIAS[0]?.value || 'Outros');
+      setDate(new Date().toISOString().split('T')[0]);
+      setObservation('');
     }
   }, [initialData]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!descricao || !valor || !data) return;
+    if (!description || !amount || !date) return;
 
     onSubmit({
-      descricao,
-      valor: parseFloat(valor),
-      tipo,
-      categoria,
-      data,
+      description,
+      amount: parseFloat(amount),
+      type,
+      category,
+      date,
+      observation,
     });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="descricao" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+        <label htmlFor="description" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
           Descrição
         </label>
         <input
           type="text"
-          id="descricao"
+          id="description"
           placeholder="Ex: Compras do mês"
-          value={descricao}
-          onChange={(e) => setDescricao(e.target.value)}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
           required
         />
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="valor" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+          <label htmlFor="amount" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
             Valor (R$)
           </label>
           <input
             type="number"
-            id="valor"
+            id="amount"
             step="0.01"
             placeholder="0,00"
-            value={valor}
-            onChange={(e) => setValor(e.target.value)}
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
             className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
             required
           />
         </div>
         <div>
-          <label htmlFor="data" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+          <label htmlFor="date" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
             Data
           </label>
           <input
             type="date"
-            id="data"
-            value={data}
-            onChange={(e) => setData(e.target.value)}
+            id="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
             className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
             required
           />
@@ -90,9 +94,9 @@ export default function TransactionForm({ onSubmit, initialData = null, onCancel
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
-            onClick={() => setTipo('entrada')}
+            onClick={() => setType('income')}
             className={`w-full rounded-xl py-2.5 px-4 text-sm font-semibold transition-all border ${
-              tipo === 'entrada'
+              type === 'income'
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm'
                 : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
             }`}
@@ -101,9 +105,9 @@ export default function TransactionForm({ onSubmit, initialData = null, onCancel
           </button>
           <button
             type="button"
-            onClick={() => setTipo('saida')}
+            onClick={() => setType('expense')}
             className={`w-full rounded-xl py-2.5 px-4 text-sm font-semibold transition-all border ${
-              tipo === 'saida'
+              type === 'expense'
                 ? 'bg-rose-50 text-rose-700 border-rose-300 shadow-sm'
                 : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
             }`}
@@ -113,13 +117,13 @@ export default function TransactionForm({ onSubmit, initialData = null, onCancel
         </div>
       </div>
       <div>
-        <label htmlFor="categoria" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+        <label htmlFor="category" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
           Categoria
         </label>
         <select
-          id="categoria"
-          value={categoria}
-          onChange={(e) => setCategoria(e.target.value)}
+          id="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
           className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
         >
           {CATEGORIAS.map(cat => (
@@ -128,6 +132,19 @@ export default function TransactionForm({ onSubmit, initialData = null, onCancel
             </option>
           ))}
         </select>
+      </div>
+      <div>
+        <label htmlFor="observation" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+          Observação (Opcional)
+        </label>
+        <textarea
+          id="observation"
+          placeholder="Ex: Pago no cartão de crédito"
+          value={observation}
+          onChange={(e) => setObservation(e.target.value)}
+          rows={2}
+          className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+        />
       </div>
       <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
         <button

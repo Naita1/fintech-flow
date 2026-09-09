@@ -1,13 +1,14 @@
 export default function PeriodSelector({ periods = [], selectedId, onChange }) {
   return (
-    <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2 pt-1 scrolling-touch snap-x">
-      {periods.map((p, index) => {
+    <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2 pt-1 scrolling-touch snap-x" role="group" aria-label="Seletor de período">
+      {periods.map((p) => {
         const isSelected = p.id === selectedId;
         return (
           <button
-            key={p.id || p.label || index}
+            key={p.id}
             onClick={() => onChange(p.id)}
             type="button"
+            aria-pressed={isSelected}
             className={`
               min-h-11 shrink-0 snap-start rounded-xl border px-3.5 py-2 text-left select-none
               transition-all duration-150 ease-out

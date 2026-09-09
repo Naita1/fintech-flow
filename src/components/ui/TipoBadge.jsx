@@ -1,7 +1,7 @@
 import { ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 
 export default function TipoBadge({ tipo }) {
-  const positivo = tipo === "entrada";
+  const positivo = tipo === "entrada" || tipo === "income";
 
   return (
     <span

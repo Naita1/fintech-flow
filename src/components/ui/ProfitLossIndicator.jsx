@@ -1,7 +1,7 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { fmtBRL } from "../../utils/format";
 
-export default function ProfitLossIndicator({ saldo, size = "md" }) {
+export default function ProfitLossIndicator({ saldo = 0, size = "md" }) {
   const positivo = saldo >= 0;
 
   return (

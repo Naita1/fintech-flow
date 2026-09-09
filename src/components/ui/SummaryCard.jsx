@@ -1,14 +1,14 @@
+const TONES = {
+  neutral: { bar: "bg-slate-300", icon: "text-slate-500 bg-slate-100" },
+  entrada: { bar: "bg-emerald-500", icon: "text-emerald-600 bg-emerald-50" },
+  saida: { bar: "bg-rose-500", icon: "text-rose-600 bg-rose-50" },
+  lucro: { bar: "bg-emerald-500", icon: "text-emerald-600 bg-emerald-50" },
+  prejuizo: { bar: "bg-rose-500", icon: "text-rose-600 bg-rose-50" },
+  saldo: { bar: "bg-slate-800", icon: "text-slate-700 bg-slate-100" },
+};
 
 export default function SummaryCard({ label, value, icon: Icon, tone = "neutral" }) {
-  const tones = {
-    neutral: { bar: "bg-slate-300", icon: "text-slate-500 bg-slate-100" },
-    entrada: { bar: "bg-emerald-500", icon: "text-emerald-600 bg-emerald-50" },
-    saida: { bar: "bg-rose-500", icon: "text-rose-600 bg-rose-50" },
-    lucro: { bar: "bg-emerald-500", icon: "text-emerald-600 bg-emerald-50" },
-    prejuizo: { bar: "bg-rose-500", icon: "text-rose-600 bg-rose-50" },
-    saldo: { bar: "bg-slate-800", icon: "text-slate-700 bg-slate-100" },
-  };
-  const t = tones[tone] || tones.neutral;
+  const t = TONES[tone] || TONES.neutral;
 
   return (
     <div
