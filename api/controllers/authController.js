@@ -21,6 +21,10 @@ export async function login(req, res, next) {
       return next(new AppError('E-mail e senha são obrigatórios e devem ser válidos.', 400));
     }
 
+    if (!process.env.JWT_SECRET || !process.env.DATABASE_URL) {
+      throw new Error('JWT_SECRET ou DATABASE_URL não está configurada.');
+    }
+
     const sanitizedEmail = email.trim().toLowerCase();
     const { user, token } = await authService.loginUser(sanitizedEmail, password);
 
@@ -29,7 +33,13 @@ export async function login(req, res, next) {
 
     res.status(200).json({ user });
   } catch (error) {
-    next(error);
+    console.error('ERRO DETALHADO NO LOGIN:', error);
+
+    if (error instanceof AppError && error.statusCode < 500) {
+      return next(error);
+    }
+
+    return res.status(500).json({ message: 'Erro interno ao realizar login' });
   }
 }
 
