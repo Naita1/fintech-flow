@@ -20,7 +20,10 @@ export const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const requestPath = error.config?.url || '';
+    const isAuthRequest = /\/auth\/(login|me|logout)(?:[/?#]|$)/.test(requestPath);
+
+    if (error.response?.status === 401 && !isAuthRequest) {
       window.dispatchEvent(new Event('session-expired'));
     }
     return Promise.reject(error);

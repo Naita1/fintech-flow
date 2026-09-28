@@ -35,6 +35,9 @@ export const authService = {
     try {
       await api.post('/auth/logout');
     } catch (error) {
+      if (error.response?.status === 401) {
+        return;
+      }
       console.error("Falha na chamada de logout da API:", error);
       throw new Error(getApiErrorMessage(error, 'Falha ao encerrar sessão no servidor'));
     }
