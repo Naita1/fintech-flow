@@ -33,7 +33,6 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use(limiter);
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
@@ -41,7 +40,7 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 if (!isProduction) {
-  allowedOrigins.push('http://localhost:5173');
+  allowedOrigins.push('http://localhost:5173', 'http://127.0.0.1:5173');
 }
 
 app.use(cors({
@@ -56,6 +55,8 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+app.use(limiter);
 
 app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
