@@ -1,9 +1,23 @@
 import * as transactionService from '../services/transactionService.js';
+import AppError from '../utils/AppError.js';
+
+const parseTransactionId = (idParam) => {
+  const id = Number(idParam);
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new AppError('O identificador da transação deve ser um número inteiro válido e positivo.', 400);
+  }
+  return id;
+};
 
 export async function getTransactions(req, res, next) {
   try {
     const transactions = await transactionService.getAllTransactions(req.user.id, req.query);
-    res.status(200).json(transactions);
+    
+    res.status(200).json({
+      status: 'success',
+      results: Array.isArray(transactions) ? transactions.length : 0,
+      data: { transactions },
+    });
   } catch (error) {
     next(error);
   }
@@ -12,7 +26,10 @@ export async function getTransactions(req, res, next) {
 export async function getSummary(req, res, next) {
   try {
     const summary = await transactionService.getTransactionSummary(req.user.id, req.query);
-    res.status(200).json(summary);
+    res.status(200).json({
+      status: 'success',
+      data: { summary },
+    });
   } catch (error) {
     next(error);
   }
@@ -20,8 +37,15 @@ export async function getSummary(req, res, next) {
 
 export async function addTransaction(req, res, next) {
   try {
+    if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+      return next(new AppError('Corpo da requisição inválido ou ausente.', 400));
+    }
+
     const newTransaction = await transactionService.createTransaction(req.user.id, req.body);
-    res.status(201).json(newTransaction);
+    res.status(201).json({
+      status: 'success',
+      data: { transaction: newTransaction },
+    });
   } catch (error) {
     next(error);
   }
@@ -29,12 +53,21 @@ export async function addTransaction(req, res, next) {
 
 export async function updateTransaction(req, res, next) {
   try {
+    const transactionId = parseTransactionId(req.params.id);
+
+    if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+      return next(new AppError('Corpo da requisição inválido para atualização.', 400));
+    }
+
     const updatedTransaction = await transactionService.updateTransaction(
       req.user.id,
-      req.params.id,
+      transactionId,
       req.body
     );
-    res.status(200).json(updatedTransaction);
+    res.status(200).json({
+      status: 'success',
+      data: { transaction: updatedTransaction },
+    });
   } catch (error) {
     next(error);
   }
@@ -42,7 +75,8 @@ export async function updateTransaction(req, res, next) {
 
 export async function removeTransaction(req, res, next) {
   try {
-    await transactionService.deleteTransaction(req.user.id, req.params.id);
+    const transactionId = parseTransactionId(req.params.id);
+    await transactionService.deleteTransaction(req.user.id, transactionId);
     res.status(204).send();
   } catch (error) {
     next(error);
