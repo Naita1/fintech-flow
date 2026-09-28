@@ -75,7 +75,7 @@ app.get('/health', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes); 
 
-app.all('*', (req, res, next) => {
+app.all('/{*splat}', (req, res, next) => {
   next(new AppError(`A rota ${req.originalUrl} não foi encontrada no servidor.`, 404));
 });
 
