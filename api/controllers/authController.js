@@ -8,7 +8,7 @@ export const COOKIE_NAME = 'token';
 export const getAuthCookieOptions = () => ({
   httpOnly: true,
   secure: isProduction,
-  sameSite: isProduction ? 'lax' : 'lax',
+  sameSite: isProduction ? 'none' : 'lax',
   path: '/',
   maxAge: 24 * 60 * 60 * 1000,
 });
