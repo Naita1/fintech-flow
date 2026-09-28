@@ -35,7 +35,10 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-const allowedOrigins = [process.env.FRONTEND_URL].filter(Boolean);
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'https://fintechflow-demo.vercel.app'
+].filter(Boolean);
 
 if (!isProduction) {
   allowedOrigins.push('http://localhost:5173');
