@@ -16,6 +16,12 @@ export const getAuthCookieOptions = () => ({
 export async function login(req, res, next) {
   try {
     const { email, password } = req.body;
+    console.log('[LOGIN DEBUG] Campos recebidos:', {
+      emailIsString: typeof email === 'string',
+      passwordIsString: typeof password === 'string',
+      emailHasOuterWhitespace: typeof email === 'string' && email !== email.trim(),
+      emailHasUppercase: typeof email === 'string' && email !== email.toLowerCase(),
+    });
 
     if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
       return next(new AppError('E-mail e senha são obrigatórios e devem ser válidos.', 400));
@@ -26,6 +32,7 @@ export async function login(req, res, next) {
     }
 
     const sanitizedEmail = email.trim().toLowerCase();
+    console.log('[LOGIN DEBUG] E-mail enviado à consulta foi normalizado com trim().toLowerCase().');
     const { user, token } = await authService.loginUser(sanitizedEmail, password);
 
     const cookieOptions = getAuthCookieOptions();

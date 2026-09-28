@@ -24,12 +24,19 @@ export async function loginUser(email, password) {
   const user = rows[0];
 
   if (!user) {
+    console.log('[LOGIN DEBUG] Falha: nenhum usuário encontrado pela consulta de e-mail.');
     await bcrypt.compare(password, DUMMY_HASH);
     throw new AppError('Credenciais inválidas.', 401);
   }
 
+  const hasBcryptHash = typeof user.password_hash === 'string'
+    && /^\$2[aby]\$\d{2}\$/.test(user.password_hash);
+  console.log('[LOGIN DEBUG] Usuário encontrado; hash bcrypt válida presente:', hasBcryptHash);
+
   const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+  console.log('[LOGIN DEBUG] Resultado de bcrypt.compare:', isPasswordValid);
   if (!isPasswordValid) {
+    console.log('[LOGIN DEBUG] Falha: senha enviada não corresponde à hash armazenada.');
     throw new AppError('Credenciais inválidas.', 401);
   }
 
