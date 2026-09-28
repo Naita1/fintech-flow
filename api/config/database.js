@@ -27,7 +27,7 @@ const pool = new Pool({
   idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10),
   connectionTimeoutMillis: parseInt(process.env.DB_CONN_TIMEOUT || '5000', 10),
   ssl: isProduction
-    ? { rejectUnauthorized: true }
+    ? { rejectUnauthorized: false }
     : { rejectUnauthorized: false }, 
 });
 

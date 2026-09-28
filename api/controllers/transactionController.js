@@ -19,6 +19,7 @@ export async function getTransactions(req, res, next) {
       data: { transactions },
     });
   } catch (error) {
+    console.error('Error fetching transactions:', error);
     next(error);
   }
 }
