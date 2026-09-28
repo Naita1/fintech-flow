@@ -18,6 +18,16 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    const handleSessionExpired = () => {
+      logout();
+    };
+
+    window.addEventListener('session-expired', handleSessionExpired);
+
+    return () => window.removeEventListener('session-expired', handleSessionExpired);
+  }, [logout]);
+
+  useEffect(() => {
     const controller = new AbortController();
 
     authService

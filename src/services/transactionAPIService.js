@@ -1,9 +1,6 @@
 import { api } from './api';
 import { toFrontTransaction, toApiTransaction } from './adapters/transactionAdapter';
-
-const getApiErrorMessage = (err, fallback) => {
-  return err.response?.data?.error || err.response?.data?.message || err.message || fallback;
-};
+import { getApiErrorMessage } from './utils/apiUtils';
 
 export const transactionAPIService = {
   async getAll(filters = {}, signal) {
@@ -16,7 +13,6 @@ export const transactionAPIService = {
       return Array.isArray(data) ? data.map(toFrontTransaction) : [];
     } catch (err) {
       if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
-        console.log('Busca de transações abortada.');
         return [];
       }
       throw new Error(getApiErrorMessage(err, 'Falha ao buscar as movimentações.'));
