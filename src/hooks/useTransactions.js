@@ -1,69 +1,72 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '../services/api';
-import { toFrontTransaction, toApiTransaction } from '../services/adapters/transactionAdapter';
+import { transactionAPIService } from '../services/transactionAPIService';
 
-export function useTransactions() {
+const sortByDateDesc = (a, b) => {
+  const timeA = a?.date ? new Date(a.date).getTime() : 0;
+  const timeB = b?.date ? new Date(b.date).getTime() : 0;
+  return timeB - timeA;
+};
+
+export function useTransactions(filters = {}) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchTransactions = useCallback(async () => {
+  const filtersKey = JSON.stringify(filters);
+
+  const loadTransactions = useCallback(async (signal) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get('/transactions');
-      const data = response.data;
-      const normalized = Array.isArray(data) ? data.map(toFrontTransaction) : [];
-      
-      setTransactions(normalized.sort((a, b) => new Date(b.date) - new Date(a.date)));
+      const fetchedTransactions = await transactionAPIService.getAll(filters, signal);
+      setTransactions(fetchedTransactions.sort(sortByDateDesc));
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Falha ao buscar as movimentações.');
-      console.error(err);
+      if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
+      setError(err.message);
+      console.error("Hook useTransactions falhou ao carregar dados:", err);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
-  }, []);
+  }, [filtersKey]);
 
   useEffect(() => {
-    fetchTransactions();
-  }, [fetchTransactions]);
+    const controller = new AbortController();
+    loadTransactions(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
+  }, [loadTransactions]);
 
   const addTransaction = useCallback(async (rawData) => {
     setError(null);
-    const payload = toApiTransaction(rawData);
-
     try {
-      const response = await api.post('/transactions', payload);
-      const normalizedNew = toFrontTransaction(response.data);
-
-      setTransactions(prev => [normalizedNew, ...prev].sort((a, b) => new Date(b.date) - new Date(a.date)));
-      return normalizedNew;
+      const newTransaction = await transactionAPIService.create(rawData);
+      setTransactions(prev => [newTransaction, ...prev]);
+      return newTransaction;
     } catch (err) {
-      const errorMessage = err.response?.data?.error || err.message || 'Falha ao adicionar a movimentação.';
-      setError(errorMessage);
-      console.error('Erro ao adicionar transação:', err);
-      throw err;
+      setError(err.message);
+      console.error('Falha ao adicionar transação:', err);
+      throw err; 
     }
   }, []);
 
   const updateTransaction = useCallback(async (transactionData) => {
     setError(null);
     const { id, ...rawData } = transactionData;
-    const payload = toApiTransaction(rawData);
-
     try {
-      const response = await api.put(`/transactions/${id}`, payload);
-      const normalizedUpdated = toFrontTransaction(response.data);
-
+      const updatedTransaction = await transactionAPIService.update(id, rawData);
       setTransactions(prev =>
         prev
-          .map(tx => (tx.id === id ? normalizedUpdated : tx))
-          .sort((a, b) => new Date(b.date) - new Date(a.date))
+          .map(tx => (tx.id === id ? updatedTransaction : tx))
+          .sort(sortByDateDesc)
       );
-      return normalizedUpdated;
+      return updatedTransaction;
     } catch (err) {
       setError(err.message);
-      console.error('Erro ao atualizar transação:', err);
+      console.error('Falha ao atualizar transação:', err);
       throw err;
     }
   }, []);
@@ -71,23 +74,27 @@ export function useTransactions() {
   const deleteTransaction = useCallback(async (id) => {
     setError(null);
     try {
-      await api.delete(`/transactions/${id}`);
+      await transactionAPIService.remove(id);
       setTransactions(prev => prev.filter(tx => tx.id !== id));
     } catch (err) {
-      const errorMessage = err.response?.data?.error || err.message || 'Falha ao excluir a movimentação.';
-      setError(errorMessage);
-      console.error('Erro ao excluir transação:', err);
+      setError(err.message);
+      console.error('Falha ao excluir transação:', err);
       throw err;
     }
   }, []);
 
-  return { 
-    transactions, 
-    loading, 
-    error, 
+  const refetch = useCallback(() => {
+    const controller = new AbortController();
+    loadTransactions(controller.signal);
+  }, [loadTransactions]);
+
+  return {
+    transactions,
+    loading,
+    error,
     addTransaction,
     updateTransaction,
     deleteTransaction,
-    refetch: fetchTransactions
+    refetch,
   };
 }

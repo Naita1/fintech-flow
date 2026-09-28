@@ -1,11 +1,13 @@
 export function toFrontTransaction(apiTransaction) {
   if (!apiTransaction) return null;
 
+  const amount = Number(apiTransaction.amount);
+
   return {
     id: apiTransaction.id,
     description: apiTransaction.description,
-    amount: Number(apiTransaction.amount),
-    type: apiTransaction.type, 
+    amount: isNaN(amount) ? 0 : amount,
+    type: apiTransaction.type,
     category: apiTransaction.category,
     frequency: apiTransaction.frequency || 'monthly',
     date: apiTransaction.date ? apiTransaction.date.split('T')[0] : '',
@@ -15,9 +17,11 @@ export function toFrontTransaction(apiTransaction) {
 }
 
 export function toApiTransaction(frontTransaction) {
+  const amount = Number(frontTransaction.amount);
+
   return {
     description: frontTransaction.description,
-    amount: Number(frontTransaction.amount),
+    amount: isNaN(amount) ? 0 : amount,
     type: frontTransaction.type,
     category: frontTransaction.category,
     frequency: frontTransaction.frequency,
