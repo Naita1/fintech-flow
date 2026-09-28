@@ -1,45 +1,39 @@
-const parseTx = (t) => {
-  return {
-    type: t.type || '',
-    amount: t.amount || 0,
-    category: t.category || 'Outros'
-  };
-};
-
 export const totals = (transacoes = []) => {
   if (!Array.isArray(transacoes)) return { entradas: 0, saidas: 0, saldo: 0 };
 
-  return transacoes.reduce(
+  const { entradas, saidas } = transacoes.reduce(
     (acc, t) => {
-      const { type, amount } = parseTx(t);
+      const type = t?.type;
+      const amount = t?.amount || 0;
 
       if (type === 'income') {
         acc.entradas += amount;
       } else if (type === 'expense') {
         acc.saidas += amount;
       }
-
-      acc.saldo = acc.entradas - acc.saidas;
       return acc;
     },
-    { entradas: 0, saidas: 0, saldo: 0 }
+    { entradas: 0, saidas: 0 }
   );
+
+  return { entradas, saidas, saldo: entradas - saidas };
 };
 
 export const categoriaDist = (transacoes = []) => {
   if (!Array.isArray(transacoes)) return [];
 
-  const map = {};
-
-  transacoes.forEach((t) => {
-    const { type, amount, category } = parseTx(t);
+  const distributionMap = transacoes.reduce((acc, t) => {
+    const type = t?.type;
+    const amount = t?.amount || 0;
+    const category = t?.category || 'Outros';
 
     if (type === 'expense') {
-      map[category] = (map[category] || 0) + amount;
+      acc[category] = (acc[category] || 0) + amount;
     }
-  });
+    return acc;
+  }, {});
 
-  return Object.entries(map).map(([categoria, valor]) => ({
+  return Object.entries(distributionMap).map(([categoria, valor]) => ({
     categoria,
     valor,
   }));
