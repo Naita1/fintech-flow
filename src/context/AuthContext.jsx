@@ -1,76 +1,54 @@
-import { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import { authService } from "../services/authService";
 
 const AuthContext = createContext(null);
-
-const API_URL = import.meta.env.VITE_API_URL || '';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const handleSessionExpired = () => {
-      setUser(null);
-    };
-
-    window.addEventListener('session-expired', handleSessionExpired);
-    return () => {
-      window.removeEventListener('session-expired', handleSessionExpired);
-    };
-  }, []);
-
-  useEffect(() => {
-    fetch(`${API_URL}/api/auth/me`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include" 
-    })
-      .then((r) => {
-        if (r.ok) return r.json();
-        return null;
-      })
-      .then(setUser)
-      .catch(() => {
-        setUser(null);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  const login = useCallback(async (email, password) => {
-    const res = await fetch(`${API_URL}/api/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include", 
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.error || errorData.message || "Erro ao entrar");
-    }
-    
-    const data = await res.json();
-    const userData = data.user || { id: data.id, name: data.name, email: data.email };
-    setUser(userData);
-    return data;
-  }, []);
-
   const logout = useCallback(async () => {
     try {
-      await fetch(`${API_URL}/api/auth/logout`, { 
-        method: "POST", 
-        credentials: "include" 
-      });
+      await authService.logout();
     } catch (err) {
-      console.error("Erro ao realizar logout no servidor:", err);
+      console.error("Erro ao invalidar sessão no servidor:", err);
     } finally {
       setUser(null);
     }
   }, []);
 
-  const value = useMemo(() => ({ user, loading, login, logout }), [user, loading, login, logout]);
+  useEffect(() => {
+    const controller = new AbortController();
+
+    authService
+      .getCurrentUser(controller.signal)
+      .then(setUser)
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
+        console.error("Falha na inicialização da autenticação:", err);
+        setUser(null);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
+  const login = useCallback(async (email, password) => {
+    const loggedUser = await authService.login(email, password);
+    setUser(loggedUser);
+    return loggedUser;
+  }, []);
+
+  const value = useMemo(
+    () => ({ user, loading, login, logout }),
+    [user, loading, login, logout]
+  );
 
   return (
     <AuthContext.Provider value={value}>
@@ -79,4 +57,10 @@ export function AuthProvider({ children }) {
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth deve ser utilizado obrigatoriamente dentro de um AuthProvider");
+  }
+  return context;
+};
