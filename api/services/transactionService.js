@@ -21,8 +21,10 @@ const frequencyMap = {
 };
 
 export async function getAllTransactions(userId, filters = {}) {
-  const { startDate, endDate, month, year, category, page = 1, limit = 20 } = filters;
-  const offset = (page - 1) * limit;
+  const { startDate, endDate, month, year, category } = filters;
+  const parsedPage = Math.max(1, parseInt(filters.page, 10) || 1);
+  const parsedLimit = Math.max(1, Math.min(100, parseInt(filters.limit, 10) || 20));
+  const offset = (parsedPage - 1) * parsedLimit;
 
   let query = `
     SELECT id, description, amount, type, category, frequency, date, observation, created_at 
@@ -44,7 +46,7 @@ export async function getAllTransactions(userId, filters = {}) {
     query += ` AND category = $${params.length}`;
   }
 
-  params.push(limit, offset);
+  params.push(parsedLimit, offset);
   query += ` ORDER BY date DESC, created_at DESC LIMIT $${params.length - 1} OFFSET $${params.length}`;
 
   const { rows } = await pool.query(query, params);
@@ -56,9 +58,9 @@ export async function getTransactionSummary(userId, filters = {}) {
 
   let query = `
     SELECT 
-      COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0)::FLOAT AS total_income,
-      COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0)::FLOAT AS total_expense,
-      COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END), 0)::FLOAT AS balance
+      ROUND(COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0)::NUMERIC, 2)::FLOAT AS total_income,
+      ROUND(COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0)::NUMERIC, 2)::FLOAT AS total_expense,
+      ROUND(COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END), 0)::NUMERIC, 2)::FLOAT AS balance
     FROM transactions
     WHERE user_id = $1 AND deleted_at IS NULL
   `;
@@ -103,22 +105,28 @@ export async function createTransaction(userId, data) {
 }
 
 export async function updateTransaction(userId, transactionId, data) {
-  const description = data.description || data.descricao;
-  const amount = data.amount || data.valor;
-  const category = data.category;
-  const date = data.date;
-  const observation = data.observation || null;
+  const description = data.description !== undefined ? data.description : data.descricao;
+  const amount = data.amount !== undefined ? data.amount : data.valor;
+  const category = data.category !== undefined ? data.category : null;
+  const date = data.date !== undefined ? data.date : null;
+  const observation = data.observation !== undefined ? data.observation : null;
 
-  const rawType = String(data.type || data.tipo || '').toLowerCase();
-  const type = typeMap[rawType] || 'income';
+  const rawType = data.type || data.tipo;
+  const type = rawType ? (typeMap[String(rawType).toLowerCase()] || 'income') : null;
 
   const rawFrequency = data.frequency || data.frequencia;
   const frequency = rawFrequency ? frequencyMap[String(rawFrequency).toLowerCase()] : null;
 
   const query = `
     UPDATE transactions 
-    SET description = $1, amount = $2, type = $3, category = $4, 
-        frequency = COALESCE($5, frequency), date = $6, observation = $7, updated_at = CURRENT_TIMESTAMP
+    SET description = COALESCE($1, description), 
+        amount = COALESCE($2, amount), 
+        type = COALESCE($3, type), 
+        category = COALESCE($4, category), 
+        frequency = COALESCE($5, frequency), 
+        date = COALESCE($6, date), 
+        observation = COALESCE($7, observation), 
+        updated_at = CURRENT_TIMESTAMP
     WHERE id = $8 AND user_id = $9 AND deleted_at IS NULL
     RETURNING id, description, amount, type, category, frequency, date, observation, updated_at
   `;
