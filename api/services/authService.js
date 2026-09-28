@@ -18,7 +18,7 @@ export async function loginUser(email, password) {
   }
 
   const { rows } = await pool.query(
-    'SELECT id, name, email, password_hash FROM users WHERE email = $1 AND deleted_at IS NULL',
+    'SELECT * FROM users WHERE LOWER(email) = LOWER($1)',
     [email]
   );
   const user = rows[0];
