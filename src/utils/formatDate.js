@@ -1,19 +1,33 @@
-export const parseLocalDate = (dateString) => {
-  if (!dateString) return new Date();
-
-  if (typeof dateString === 'string') {
-    if (dateString.includes('-')) {
-      const clean = dateString.split('T')[0];
-      const [year, month, day] = clean.split('-').map(Number);
-      return new Date(Date.UTC(year, month - 1, day));
-    }
-    if (dateString.includes('/')) {
-      const [day, month, year] = dateString.split('/').map(Number);
-      return new Date(Date.UTC(year, month - 1, day));
-    }
+export const parseDate = (dateSource) => {
+  if (!dateSource) return null;
+  if (dateSource instanceof Date) {
+    return isNaN(dateSource.getTime()) ? null : dateSource;
   }
 
-  return new Date(dateString);
+  const dateString = String(dateSource).split("T")[0];
+
+  let year, month, day;
+
+  if (dateString.includes("-")) {
+    [year, month, day] = dateString.split("-").map(Number);
+  } else if (dateString.includes("/")) {
+    [day, month, year] = dateString.split("/").map(Number);
+  } else {
+    const d = new Date(dateSource);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  if (isNaN(year) || isNaN(month) || isNaN(day)) {
+    return null;
+  }
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  if (isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date;
 };
 
 const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
@@ -23,11 +37,11 @@ const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
   timeZone: 'UTC',
 });
 
-export const formatDate = (dateString) => {
-  if (!dateString) return '-';
+export const formatDate = (dateSource) => {
+  if (!dateSource) return '-';
 
-  const date = parseLocalDate(dateString);
-  if (isNaN(date.getTime())) return dateString;
+  const date = parseDate(dateSource);
+  if (!date) return String(dateSource);
 
   return dateFormatter.format(date);
 };
