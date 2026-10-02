@@ -7,7 +7,8 @@ import { loginSchema } from '../schemas/authSchemas.js';
 const router = Router();
 
 router.post('/login', validate(loginSchema), authController.login);
+router.post('/refresh', authController.refresh);
 router.get('/me', authMiddleware, authController.getMe);
-router.post('/logout', authMiddleware, authController.logout);
+router.post('/logout', authController.logout);
 
 export default router;

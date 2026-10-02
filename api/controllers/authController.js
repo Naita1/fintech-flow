@@ -1,67 +1,90 @@
 import * as authService from '../services/authService.js';
-import AppError from '../utils/AppError.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
+const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';
+const CSRF_TOKEN_COOKIE_NAME = 'csrf-token';
 
-export const COOKIE_NAME = 'token';
+const REFRESH_TOKEN_EXPIRES_IN_MS = parseInt(process.env.REFRESH_TOKEN_EXPIRES_IN_MS, 10) || 7 * 24 * 60 * 60 * 1000; // 7 dias
 
-export const getAuthCookieOptions = () => ({
+const getRefreshTokenCookieOptions = () => ({
   httpOnly: true,
   secure: isProduction,
-  sameSite: isProduction ? 'none' : 'lax',
+  sameSite: 'strict',
   path: '/',
-  maxAge: 24 * 60 * 60 * 1000,
+  maxAge: REFRESH_TOKEN_EXPIRES_IN_MS,
 });
 
-export async function login(req, res, next) {
+const getCsrfCookieOptions = () => ({
+  secure: isProduction,
+  sameSite: 'strict',
+  path: '/',
+  maxAge: REFRESH_TOKEN_EXPIRES_IN_MS,
+});
+
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    console.log('[LOGIN DEBUG] Campos recebidos:', {
-      emailIsString: typeof email === 'string',
-      passwordIsString: typeof password === 'string',
-      emailHasOuterWhitespace: typeof email === 'string' && email !== email.trim(),
-      emailHasUppercase: typeof email === 'string' && email !== email.toLowerCase(),
+    const { accessToken, refreshToken, csrfToken, user } = await authService.loginUser(email, password);
+
+    res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, getRefreshTokenCookieOptions());
+    res.cookie(CSRF_TOKEN_COOKIE_NAME, csrfToken, getCsrfCookieOptions());
+
+    res.status(200).json({
+      status: 'success',
+      accessToken,
+      user,
     });
-
-    if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
-      return next(new AppError('E-mail e senha são obrigatórios e devem ser válidos.', 400));
-    }
-
-    if (!process.env.JWT_SECRET || !process.env.DATABASE_URL) {
-      throw new Error('JWT_SECRET ou DATABASE_URL não está configurada.');
-    }
-
-    const sanitizedEmail = email.trim().toLowerCase();
-    console.log('[LOGIN DEBUG] E-mail enviado à consulta foi normalizado com trim().toLowerCase().');
-    const { user, token } = await authService.loginUser(sanitizedEmail, password);
-
-    const cookieOptions = getAuthCookieOptions();
-    res.cookie(COOKIE_NAME, token, cookieOptions);
-
-    res.status(200).json({ user });
-  } catch (error) {
-    console.error('ERRO DETALHADO NO LOGIN:', error);
-
-    if (error instanceof AppError && error.statusCode < 500) {
-      return next(error);
-    }
-
-    return res.status(500).json({ message: 'Erro interno ao realizar login' });
-  }
-}
-
-export async function logout(req, res, next) {
-  try {
-    const { maxAge, ...clearOptions } = getAuthCookieOptions();
-    res.clearCookie(COOKIE_NAME, clearOptions);
-
-    res.status(200).json({ message: 'Logout realizado com sucesso.' });
   } catch (error) {
     next(error);
   }
 }
 
-export function getMe(req, res) {
-  const { id, name, email } = req.user;
-  res.status(200).json({ id, name, email });
+export const refresh = async (req, res, next) => {
+  try {
+    const tokenFromCookie = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
+    const { accessToken, refreshToken, csrfToken } = await authService.refreshAccessToken(tokenFromCookie);
+
+    res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, getRefreshTokenCookieOptions());
+    res.cookie(CSRF_TOKEN_COOKIE_NAME, csrfToken, getCsrfCookieOptions());
+
+    res.status(200).json({
+      status: 'success',
+      accessToken,
+    });
+  } catch (error) {
+    const { maxAge, ...clearOptions } = getRefreshTokenCookieOptions();
+    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, clearOptions);
+    res.clearCookie(CSRF_TOKEN_COOKIE_NAME, { ...clearOptions, httpOnly: false });
+    next(error);
+  }
+};
+
+export const logout = async (req, res, next) => {
+  try {
+    const tokenFromCookie = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
+    if (tokenFromCookie) {
+      await authService.logoutUser(tokenFromCookie);
+    }
+
+    const { maxAge, ...clearOptions } = getRefreshTokenCookieOptions();
+    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, clearOptions);
+    res.clearCookie(CSRF_TOKEN_COOKIE_NAME, { ...clearOptions, httpOnly: false });
+
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+}
+
+export const getMe = (req, res) => {
+  if (!req.user) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Usuário não encontrado.'
+    });
+  }
+  res.status(200).json({
+    status: 'success',
+    user: req.user,
+  });
 }

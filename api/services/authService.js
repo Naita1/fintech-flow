@@ -4,22 +4,25 @@ import jwt from 'jsonwebtoken';
 import pool from '../config/database.js';
 import AppError from '../utils/AppError.js';
 
-const DUMMY_HASH = bcrypt.hashSync('dummy_password_timing_mitigation', 10);
-const JWT_SECRET = process.env.JWT_SECRET;
+const DUMMY_HASH = bcrypt.hashSync('dummy_password_for_timing_attack_mitigation', 10);
 
+const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
-  throw new AppError('Erro de configuração: Chave JWT não definida.', 500);
+  throw new AppError('Erro de configuração: JWT_SECRET não definido.', 500);
 }
 
 function generateTokens(userId) {
-  const accessToken = jwt.sign({ jti: crypto.randomUUID() }, JWT_SECRET, {
+  const accessTokenExpiresIn = process.env.ACCESS_TOKEN_EXPIRES_IN || '15m';
+
+  const accessToken = jwt.sign({}, JWT_SECRET, {
     subject: String(userId),
-    expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || '15m',
+    jwtid: crypto.randomUUID(),
+    expiresIn: accessTokenExpiresIn,
     algorithm: 'HS256',
   });
 
   const refreshToken = crypto.randomBytes(64).toString('hex');
-  const refreshTokenExpiresInMs = parseInt(process.env.REFRESH_TOKEN_EXPIRES_IN_MS, 10) || 7 * 24 * 60 * 60 * 1000; // 7 dias
+  const refreshTokenExpiresInMs = parseInt(process.env.REFRESH_TOKEN_EXPIRES_IN_MS, 10) || 7 * 24 * 60 * 60 * 1000;
   const refreshTokenExpiresAt = new Date(Date.now() + refreshTokenExpiresInMs);
 
   return { accessToken, refreshToken, refreshTokenExpiresAt };
@@ -27,8 +30,11 @@ function generateTokens(userId) {
 
 async function saveRefreshToken(userId, token, expiresAt) {
   const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-  await pool.query('DELETE FROM refresh_tokens WHERE user_id = $1', [userId]); 
-  await pool.query('INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)', [userId, tokenHash, expiresAt]);
+  
+  await pool.query(
+    'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)',
+    [userId, tokenHash, expiresAt]
+  );
 }
 
 export async function loginUser(email, password) {
@@ -37,25 +43,15 @@ export async function loginUser(email, password) {
   }
 
   const { rows } = await pool.query(
-    'SELECT * FROM users WHERE LOWER(email) = LOWER($1)',
+    'SELECT * FROM users WHERE LOWER(email) = LOWER($1) AND deleted_at IS NULL',
     [email]
   );
   const user = rows[0];
 
-  if (!user) {
-    console.log('[LOGIN DEBUG] Falha: nenhum usuário encontrado pela consulta de e-mail.');
-    await bcrypt.compare(password, DUMMY_HASH);
-    throw new AppError('Credenciais inválidas.', 401);
-  }
+  const passwordToCompare = user ? user.password_hash : DUMMY_HASH;
+  const isPasswordValid = await bcrypt.compare(password, passwordToCompare);
 
-  const hasBcryptHash = typeof user.password_hash === 'string'
-    && /^\$2[aby]\$\d{2}\$/.test(user.password_hash);
-  console.log('[LOGIN DEBUG] Usuário encontrado; hash bcrypt válida presente:', hasBcryptHash);
-
-  const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-  console.log('[LOGIN DEBUG] Resultado de bcrypt.compare:', isPasswordValid);
-  if (!isPasswordValid) {
-    console.log('[LOGIN DEBUG] Falha: senha enviada não corresponde à hash armazenada.');
+  if (!user || !isPasswordValid) {
     throw new AppError('Credenciais inválidas.', 401);
   }
 
@@ -80,22 +76,23 @@ export async function refreshAccessToken(tokenFromCookie) {
   const tokenHash = crypto.createHash('sha256').update(tokenFromCookie).digest('hex');
 
   const { rows } = await pool.query(
-    'SELECT user_id, expires_at FROM refresh_tokens WHERE token_hash = $1',
+    'SELECT id, user_id, expires_at FROM refresh_tokens WHERE token_hash = $1',
     [tokenHash]
   );
   const savedToken = rows[0];
 
   if (!savedToken) {
-    throw new AppError('Sessão inválida ou expirada. Faça login novamente.', 403);
+    throw new AppError('Sessão inválida ou revogada. Faça login novamente.', 403);
   }
 
   if (new Date() > new Date(savedToken.expires_at)) {
-    await pool.query('DELETE FROM refresh_tokens WHERE token_hash = $1', [tokenHash]);
+    await pool.query('DELETE FROM refresh_tokens WHERE id = $1', [savedToken.id]);
     throw new AppError('Sessão expirada. Faça login novamente.', 403);
   }
 
+  await pool.query('DELETE FROM refresh_tokens WHERE id = $1', [savedToken.id]);
+
   const { accessToken, refreshToken, refreshTokenExpiresAt } = generateTokens(savedToken.user_id);
-  await pool.query('DELETE FROM refresh_tokens WHERE token_hash = $1', [tokenHash]);
   await saveRefreshToken(savedToken.user_id, refreshToken, refreshTokenExpiresAt);
 
   const csrfToken = crypto.randomBytes(32).toString('hex');
@@ -108,6 +105,7 @@ export async function refreshAccessToken(tokenFromCookie) {
 }
 
 export async function logoutUser(tokenFromCookie) {
+  if (!tokenFromCookie) return;
   const tokenHash = crypto.createHash('sha256').update(tokenFromCookie).digest('hex');
   await pool.query('DELETE FROM refresh_tokens WHERE token_hash = $1', [tokenHash]);
 }
