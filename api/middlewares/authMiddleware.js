@@ -8,12 +8,7 @@ const JWT_ALGORITHM = 'HS256';
 export const authMiddleware = async (req, res, next) => {
   try {
     let token;
-
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
-      token = req.headers.authorization.split(' ')[1];
-    } else if (req.cookies?.token) {
-      token = req.cookies.token;
-    }
+    token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
       return next(new AppError('Você não está logado. Por favor, faça o login para obter acesso.', 401));
@@ -28,7 +23,7 @@ export const authMiddleware = async (req, res, next) => {
 
     const { rows } = await pool.query(
       'SELECT id, name, email FROM users WHERE id = $1 AND deleted_at IS NULL',
-      [decoded.id]
+      [decoded.sub] 
     );
     const currentUser = rows[0];
 

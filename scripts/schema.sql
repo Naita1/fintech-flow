@@ -35,3 +35,14 @@ CREATE INDEX IF NOT EXISTS idx_transactions_active_user_date
 CREATE INDEX IF NOT EXISTS idx_transactions_user_category 
     ON transactions(user_id, category) 
     WHERE deleted_at IS NULL;
+
+-- Tabela para armazenar refresh tokens e gerenciar sessões ativas
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash VARCHAR(255) NOT NULL UNIQUE,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);

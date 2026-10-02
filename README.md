@@ -1,5 +1,13 @@
 # 💸 fintech-flow
 
+![Em Desenvolvimento](https://img.shields.io/badge/status-em%20desenvolvimento-yellow?style=for-the-badge)
+
+> **Atenção: Projeto em Refatoração**
+>
+> Este projeto está passando por uma refatoração de arquitetura para implementar um sistema de autenticação mais seguro.
+
+---
+
 O **fintech-flow** é uma aplicação web full-stack para gestão financeira pessoal e empresarial.
 
 O sistema permite o controle de movimentações financeiras, visualização por períodos semanais e quinzenais, dashboard com indicadores financeiros, autenticação de usuários e persistência de dados em PostgreSQL.

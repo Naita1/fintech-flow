@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api, setAccessToken } from './api';
 import { getApiErrorMessage } from './utils/apiUtils';
 
 const normalizeUser = (data) => {
@@ -25,6 +25,9 @@ export const authService = {
   async login(email, password) {
     try {
       const response = await api.post('/auth/login', { email, password });
+      if (response.data.accessToken) {
+        setAccessToken(response.data.accessToken);
+      }
       return normalizeUser(response.data);
     } catch (error) {
       throw new Error(getApiErrorMessage(error, 'E-mail ou senha inválidos'));
@@ -32,6 +35,7 @@ export const authService = {
   },
 
   async logout() {
+    setAccessToken(null); // Limpa o token localmente de imediato
     try {
       await api.post('/auth/logout');
     } catch (error) {
