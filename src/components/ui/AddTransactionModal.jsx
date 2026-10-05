@@ -1,20 +1,38 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import TransactionForm from './TransactionForm';
 
 export default function AddTransactionModal({ isOpen, onClose, onSave }) {
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
   if (!isOpen) return null;
 
-  const handleSave = (formData) => {
-    if (typeof onSave === 'function') {
-      onSave(formData);
+  const handleClose = () => {
+    if (!isSaving) onClose();
+  };
+
+  const handleSave = async (formData) => {
+    if (isSaving) return;
+    setErrorMessage('');
+    setIsSaving(true);
+
+    try {
+      if (typeof onSave !== 'function') {
+        throw new Error('Não foi possível salvar a movimentação.');
+      }
+      await onSave(formData);
+      onClose();
+    } catch (error) {
+      setErrorMessage(error.message || 'Falha ao salvar a movimentação.');
+    } finally {
+      setIsSaving(false);
     }
-    onClose();
   };
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
+      <Dialog as="div" className="relative z-50" onClose={handleClose}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -46,10 +64,15 @@ export default function AddTransactionModal({ isOpen, onClose, onSave }) {
                   Nova Movimentação
                 </Dialog.Title>
                 <div className="mt-4">
+                  {errorMessage && (
+                    <p role="alert" className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                      {errorMessage}
+                    </p>
+                  )}
                   <TransactionForm
                     onSubmit={handleSave}
-                    submitButtonText="Adicionar Movimentação"
-                    onCancel={onClose}
+                    submitButtonText={isSaving ? 'Salvando...' : 'Adicionar Movimentação'}
+                    onCancel={handleClose}
                   />
                 </div>
               </Dialog.Panel>

@@ -11,7 +11,8 @@ const parseTransactionId = (idParam) => {
 
 export async function getTransactions(req, res, next) {
   try {
-    const transactions = await transactionService.getAllTransactions(req.user.id, req.query);
+    const filters = req.validatedQuery ?? req.query;
+    const transactions = await transactionService.getAllTransactions(req.user.id, filters);
     
     res.status(200).json({
       status: 'success',
@@ -26,7 +27,8 @@ export async function getTransactions(req, res, next) {
 
 export async function getSummary(req, res, next) {
   try {
-    const summary = await transactionService.getTransactionSummary(req.user.id, req.query);
+    const filters = req.validatedQuery ?? req.query;
+    const summary = await transactionService.getTransactionSummary(req.user.id, filters);
     res.status(200).json({
       status: 'success',
       data: { summary },

@@ -31,12 +31,13 @@ export default function PeriodControlView({
   const { entradas, saidas, saldo } = totals(transacoes);
 
   const handleAddWithFrequency = (data) => {
-    if (typeof onAddTransaction === "function") {
-      onAddTransaction({
-        ...data,
-        frequency: frequenciaPadrao === "quinzenal" ? "biweekly" : "weekly",
-      });
+    if (typeof onAddTransaction !== "function") {
+      return Promise.reject(new Error("Ação de salvar transação indisponível."));
     }
+    return onAddTransaction({
+      ...data,
+      frequency: frequenciaPadrao === "quinzenal" ? "biweekly" : "weekly",
+    });
   };
 
   const handleUpdateWithFrequency = (data) => {

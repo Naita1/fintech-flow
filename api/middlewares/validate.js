@@ -2,7 +2,11 @@ export const validate = (schema, target = null) => async (req, res, next) => {
   try {
     if (target) {
       const parsed = await schema.parseAsync(req[target]);
-      req[target] = parsed;
+      if (target === 'query') {
+        req.validatedQuery = parsed;
+      } else {
+        req[target] = parsed;
+      }
       return next();
     }
 
@@ -17,7 +21,7 @@ export const validate = (schema, target = null) => async (req, res, next) => {
     }
     
     if (parsed.query !== undefined) {
-      req.query = Object.assign(req.query || {}, parsed.query);
+      req.validatedQuery = parsed.query;
     }
     
     if (parsed.params !== undefined) {

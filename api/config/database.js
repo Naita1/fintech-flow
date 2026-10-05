@@ -22,17 +22,17 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 const pool = new Pool({
   connectionString: databaseUrl,
-  max: parseInt(process.env.DB_POOL_MAX || '20', 10),
+  max: 10,
   min: parseInt(process.env.DB_POOL_MIN || '2', 10),
-  idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10),
-  connectionTimeoutMillis: parseInt(process.env.DB_CONN_TIMEOUT || '5000', 10),
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 15000,
   ssl: isProduction
     ? { rejectUnauthorized: false }
     : { rejectUnauthorized: false }, 
 });
 
 pool.on('error', (err) => {
-  console.error('[DATABASE ERROR] Erro inesperado no cliente ocioso do pool:', err);
+  console.error(err.message);
 });
 
 export const query = (text, params) => pool.query(text, params);

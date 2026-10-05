@@ -34,7 +34,11 @@ export function AuthProvider({ children }) {
       .getCurrentUser(controller.signal)
       .then(setUser)
       .catch((err) => {
-        if (err.name === 'AbortError') return;
+        if (
+          err.name === 'AbortError' ||
+          err.name === 'CanceledError' ||
+          err.code === 'ERR_CANCELED'
+        ) return;
         console.error("Falha na inicialização da autenticação:", err);
         setUser(null);
       })
