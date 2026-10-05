@@ -9,7 +9,7 @@ const REFRESH_TOKEN_EXPIRES_IN_MS = parseInt(process.env.REFRESH_TOKEN_EXPIRES_I
 const getRefreshTokenCookieOptions = () => ({
   httpOnly: true,
   secure: isProduction,
-  sameSite: 'strict',
+  sameSite: isProduction ? 'none' : 'lax',
   path: '/',
   maxAge: REFRESH_TOKEN_EXPIRES_IN_MS,
 });

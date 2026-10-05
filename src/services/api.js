@@ -1,17 +1,11 @@
 import axios from 'axios';
 
 const DEFAULT_API_URL = import.meta.env.PROD
-  ? 'https://fintech-flow-api-prod.onrender.com/api/v1'
-  : 'http://localhost:3000/api/v1';
+  ? 'https://fintech-flow-api-prod.onrender.com'
+  : 'http://localhost:3000';
 
 const VITE_API_URL = import.meta.env.VITE_API_URL || DEFAULT_API_URL;
-
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-  return null;
-}
+const API_BASE_URL = `${VITE_API_URL.replace(/\/+$/, '').replace(/\/api(?:\/v1)?$/, '')}/api`;
 
 let memoryAccessToken = null;
 let isRefreshing = false;
@@ -29,7 +23,7 @@ const processQueue = (error, token = null) => {
 };
 
 export const api = axios.create({
-  baseURL: VITE_API_URL,
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 
@@ -40,14 +34,6 @@ export const setAccessToken = (token) => {
 api.interceptors.request.use((config) => {
   if (memoryAccessToken) {
     config.headers.Authorization = `Bearer ${memoryAccessToken}`;
-  }
-
-  const methodsToProtect = ['post', 'put', 'delete', 'patch'];
-  if (methodsToProtect.includes(config.method.toLowerCase())) {
-    const csrfToken = getCookie('XSRF-TOKEN') || getCookie('csrf-token');
-    if (csrfToken) {
-      config.headers['X-CSRF-Token'] = csrfToken;
-    }
   }
 
   return config;
