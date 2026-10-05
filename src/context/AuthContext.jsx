@@ -31,8 +31,15 @@ export function AuthProvider({ children }) {
     const controller = new AbortController();
 
     authService
-      .getCurrentUser(controller.signal)
-      .then(setUser)
+      .refreshAccessToken()
+      .then((hasSession) => (
+        hasSession ? authService.getCurrentUser(controller.signal) : null
+      ))
+      .then((currentUser) => {
+        if (!controller.signal.aborted) {
+          setUser(currentUser);
+        }
+      })
       .catch((err) => {
         if (
           err.name === 'AbortError' ||

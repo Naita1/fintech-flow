@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { transactionAPIService } from '../services/transactionAPIService';
+import { useAuth } from '../context/AuthContext';
 
 const sortByDateDesc = (a, b) => {
   const timeA = a?.date ? new Date(a.date).getTime() : 0;
@@ -8,18 +9,27 @@ const sortByDateDesc = (a, b) => {
 };
 
 export function useTransactions(filters = {}) {
+  const { user, loading: authLoading } = useAuth();
+  const isAuthenticated = !authLoading && Boolean(user);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const filtersKey = JSON.stringify(filters);
 
-  const loadTransactions = useCallback(async (signal) => {
+  const fetchTransactions = useCallback(async (signal) => {
+    if (!isAuthenticated) {
+      setTransactions([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const fetchedTransactions = await transactionAPIService.getAll(filters, signal);
-      setTransactions(fetchedTransactions.sort(sortByDateDesc));
+      const data = await transactionAPIService.getAll(filters, signal);
+      const safeTransactions = Array.isArray(data) ? data : [];
+      setTransactions(safeTransactions.sort(sortByDateDesc));
     } catch (err) {
       if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
       setError(err.message);
@@ -29,29 +39,36 @@ export function useTransactions(filters = {}) {
         setLoading(false);
       }
     }
-  }, [filtersKey]);
+  }, [filtersKey, isAuthenticated]);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setTransactions([]);
+      setLoading(false);
+      return undefined;
+    }
+
     const controller = new AbortController();
-    loadTransactions(controller.signal);
+    fetchTransactions(controller.signal);
 
     return () => {
       controller.abort();
     };
-  }, [loadTransactions]);
+  }, [fetchTransactions, isAuthenticated]);
 
   const addTransaction = useCallback(async (rawData) => {
     setError(null);
     try {
       const newTransaction = await transactionAPIService.create(rawData);
-      setTransactions(prev => [newTransaction, ...prev]);
+      setTransactions(prev => [newTransaction, ...prev].sort(sortByDateDesc));
+      await fetchTransactions();
       return newTransaction;
     } catch (err) {
       setError(err.message);
       console.error('Falha ao adicionar transação:', err);
       throw err; 
     }
-  }, []);
+  }, [fetchTransactions]);
 
   const updateTransaction = useCallback(async (transactionData) => {
     setError(null);
@@ -84,9 +101,8 @@ export function useTransactions(filters = {}) {
   }, []);
 
   const refetch = useCallback(() => {
-    const controller = new AbortController();
-    loadTransactions(controller.signal);
-  }, [loadTransactions]);
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   return {
     transactions,

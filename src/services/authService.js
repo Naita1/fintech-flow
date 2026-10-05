@@ -6,7 +6,38 @@ const normalizeUser = (data) => {
   return data.user !== undefined ? data.user : data;
 };
 
+let refreshPromise = null;
+
 export const authService = {
+  refreshAccessToken() {
+    if (!refreshPromise) {
+      refreshPromise = (async () => {
+        try {
+          const response = await api.post('/auth/refresh');
+          const accessToken = response.data?.accessToken;
+          if (!accessToken) {
+            setAccessToken(null);
+            throw new Error('A API não retornou um novo token de acesso.');
+          }
+          setAccessToken(accessToken);
+          return true;
+        } catch (error) {
+          if ([401, 403].includes(error.response?.status)) {
+            setAccessToken(null);
+            return false;
+          }
+          if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
+            throw error;
+          }
+          throw new Error(getApiErrorMessage(error, 'Falha ao renovar a sessão do usuário'));
+        }
+      })().finally(() => {
+        refreshPromise = null;
+      });
+    }
+    return refreshPromise;
+  },
+
   async getCurrentUser(signal) {
     try {
       const response = await api.get('/auth/me', { signal });
@@ -35,7 +66,7 @@ export const authService = {
   },
 
   async logout() {
-    setAccessToken(null); // Limpa o token localmente de imediato
+    setAccessToken(null); 
     try {
       await api.post('/auth/logout');
     } catch (error) {

@@ -24,8 +24,8 @@ const pool = new Pool({
   connectionString: databaseUrl,
   max: 10,
   min: parseInt(process.env.DB_POOL_MIN || '2', 10),
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 15000,
+  idleTimeoutMillis: 10000,
+  connectionTimeoutMillis: 30000,
   ssl: isProduction
     ? { rejectUnauthorized: false }
     : { rejectUnauthorized: false }, 

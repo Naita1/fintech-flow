@@ -24,7 +24,9 @@ export default function AddTransactionModal({ isOpen, onClose, onSave }) {
       await onSave(formData);
       onClose();
     } catch (error) {
-      setErrorMessage(error.message || 'Falha ao salvar a movimentação.');
+      setErrorMessage(
+        error.response?.data?.message || error.message || 'Falha ao salvar a movimentação.'
+      );
     } finally {
       setIsSaving(false);
     }

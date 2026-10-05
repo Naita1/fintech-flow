@@ -33,6 +33,7 @@ export const setAccessToken = (token) => {
 
 api.interceptors.request.use((config) => {
   if (memoryAccessToken) {
+    config.headers = config.headers || {};
     config.headers.Authorization = `Bearer ${memoryAccessToken}`;
   }
 
@@ -40,17 +41,28 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.config?.url?.includes('/auth/refresh')) {
+      const accessToken = response.data?.accessToken;
+      if (accessToken) {
+        setAccessToken(accessToken);
+      }
+    }
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
+    const requestUrl = originalRequest?.url || '';
 
     if (
       error.response?.status === 401 &&
       originalRequest &&
       !originalRequest._retry &&
-      !originalRequest.url.includes('/auth/refresh') &&
-      !originalRequest.url.includes('/auth/login')
+      !requestUrl.includes('/auth/refresh') &&
+      !requestUrl.includes('/auth/login')
     ) {
+      originalRequest._retry = true;
+
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -62,22 +74,27 @@ api.interceptors.response.use(
           .catch((err) => Promise.reject(err));
       }
 
-      originalRequest._retry = true;
       isRefreshing = true;
 
       try {
         const { data } = await api.post('/auth/refresh');
-        const newAccessToken = data.accessToken;
+        const newAccessToken = data?.accessToken;
+        if (!newAccessToken) {
+          throw new Error('A API não retornou um novo token de acesso.');
+        }
         
         setAccessToken(newAccessToken);
+        originalRequest.headers = originalRequest.headers || {};
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         
         processQueue(null, newAccessToken);
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        setAccessToken(null);
-        window.dispatchEvent(new Event('session-expired'));
+        if ([401, 403].includes(refreshError.response?.status)) {
+          setAccessToken(null);
+          window.dispatchEvent(new Event('session-expired'));
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
