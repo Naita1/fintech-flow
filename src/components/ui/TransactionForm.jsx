@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { CATEGORIAS } from '../../constants/categories';
 
-export default function TransactionForm({ onSubmit, initialData = null, onCancel, submitButtonText = "Salvar" }) {
+export default function TransactionForm({ onSubmit, initialData = null, onCancel, submitButtonText = "Salvar", isSubmitting = false }) {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState('expense');
@@ -150,12 +150,14 @@ export default function TransactionForm({ onSubmit, initialData = null, onCancel
         <button
           type="button"
           onClick={onCancel}
+          disabled={isSubmitting}
           className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
         >
           Cancelar
         </button>
         <button
           type="submit"
+          disabled={isSubmitting}
           className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
         >
           {submitButtonText}

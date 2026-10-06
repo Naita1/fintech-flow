@@ -22,9 +22,6 @@ const frequencyMap = {
 
 export async function getAllTransactions(userId, filters = {}) {
   const { startDate, endDate, month, year, category } = filters;
-  const parsedPage = Math.max(1, parseInt(filters.page, 10) || 1);
-  const parsedLimit = Math.max(1, Math.min(100, parseInt(filters.limit, 10) || 20));
-  const offset = (parsedPage - 1) * parsedLimit;
 
   let query = `
     SELECT id, description, amount, type, category, frequency, date, observation, created_at 
@@ -46,8 +43,15 @@ export async function getAllTransactions(userId, filters = {}) {
     query += ` AND category = $${params.length}`;
   }
 
-  params.push(parsedLimit, offset);
-  query += ` ORDER BY date DESC, created_at DESC LIMIT $${params.length - 1} OFFSET $${params.length}`;
+  query += ' ORDER BY date DESC, created_at DESC';
+
+  if (filters.limit !== undefined) {
+    const parsedPage = Math.max(1, parseInt(filters.page, 10) || 1);
+    const parsedLimit = Math.max(1, Math.min(100, parseInt(filters.limit, 10) || 20));
+    const offset = (parsedPage - 1) * parsedLimit;
+    params.push(parsedLimit, offset);
+    query += ` LIMIT $${params.length - 1} OFFSET $${params.length}`;
+  }
 
   const { rows } = await pool.query(query, params);
   return rows;

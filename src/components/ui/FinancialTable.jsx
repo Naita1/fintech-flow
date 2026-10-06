@@ -28,11 +28,9 @@ export default function FinancialTable({ transacoes, onDeleteTransaction, onUpda
 
   const handleSaveTransaction = (transactionData) => {
     if (typeof onUpdateTransaction === "function") {
-      onUpdateTransaction(transactionData);
-    } else {
-      console.warn("A função onUpdateTransaction não foi fornecida ao FinancialTable.");
+      return onUpdateTransaction(transactionData);
     }
-    handleCloseModal();
+    return Promise.reject(new Error("A função de atualização não está disponível."));
   };
 
   const checkIsIncome = (t) => {

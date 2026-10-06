@@ -42,11 +42,12 @@ export default function PeriodControlView({
 
   const handleUpdateWithFrequency = (data) => {
     if (typeof onUpdateTransaction === "function") {
-      onUpdateTransaction({
+      return onUpdateTransaction({
         ...data,
         frequency: frequenciaPadrao === "quinzenal" ? "biweekly" : "weekly",
       });
     }
+    return Promise.reject(new Error("Ação de atualização de transação indisponível."));
   };
 
   return (

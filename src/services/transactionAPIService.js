@@ -53,7 +53,11 @@ export const transactionAPIService = {
     try {
       const payload = toApiTransaction(rawData);
       const response = await api.put(`/transactions/${id}`, payload);
-      return toFrontTransaction(response.data);
+      const transaction =
+        response.data?.data?.transaction ||
+        response.data?.transaction ||
+        response.data;
+      return toFrontTransaction(transaction);
     } catch (err) {
       throw normalizeApiError(err, 'Falha ao atualizar a movimentação.');
     }
