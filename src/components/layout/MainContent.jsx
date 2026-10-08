@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
 import { Routes, Route } from "react-router-dom";
-import { useTransactionsContext } from "../../context/TransactionsContext";
+import { useTransactionsContext } from "../../context/useTransactionsContext";
 
 const Dashboard = lazy(() => import("../../views/Dashboard"));
 const WeeklyFinance = lazy(() => import("../../views/WeeklyFinance"));
@@ -26,7 +26,7 @@ export default function MainContent() {
       <main className="flex flex-1 flex-col items-center justify-center p-4 text-center">
         <p className="mb-2 font-medium text-rose-600">Erro ao carregar movimentações:</p>
         <p className="mb-4 text-sm text-slate-500">{error}</p>
-        <button 
+        <button
           onClick={() => refetch()}
           className="rounded-lg bg-slate-800 px-4 py-2 text-sm text-white transition-colors hover:bg-slate-900"
         >
@@ -38,7 +38,7 @@ export default function MainContent() {
 
   return (
     <main className="flex-1 p-4 sm:p-6">
-      <Suspense 
+      <Suspense
         fallback={
           <div className="flex h-full items-center justify-center text-sm text-slate-400 animate-pulse">
             Carregando tela...

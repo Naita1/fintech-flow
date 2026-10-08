@@ -4,7 +4,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';
 const CSRF_TOKEN_COOKIE_NAME = 'csrf-token';
 
-const REFRESH_TOKEN_EXPIRES_IN_MS = parseInt(process.env.REFRESH_TOKEN_EXPIRES_IN_MS, 10) || 7 * 24 * 60 * 60 * 1000; // 7 dias
+const REFRESH_TOKEN_EXPIRES_IN_MS = parseInt(process.env.REFRESH_TOKEN_EXPIRES_IN_MS, 10) || 7 * 24 * 60 * 60 * 1000; 
 
 const getRefreshTokenCookieOptions = () => ({
   httpOnly: true,
@@ -20,6 +20,10 @@ const getCsrfCookieOptions = () => ({
   path: '/',
   maxAge: REFRESH_TOKEN_EXPIRES_IN_MS,
 });
+const getClearCookieOptions = (httpOnly) => {
+  const { secure, sameSite, path } = getRefreshTokenCookieOptions();
+  return { httpOnly, secure, sameSite, path };
+};
 
 export const login = async (req, res, next) => {
   try {
@@ -52,9 +56,8 @@ export const refresh = async (req, res, next) => {
       accessToken,
     });
   } catch (error) {
-    const { maxAge, ...clearOptions } = getRefreshTokenCookieOptions();
-    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, clearOptions);
-    res.clearCookie(CSRF_TOKEN_COOKIE_NAME, { ...clearOptions, httpOnly: false });
+    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, getClearCookieOptions(true));
+    res.clearCookie(CSRF_TOKEN_COOKIE_NAME, getClearCookieOptions(false));
     next(error);
   }
 };
@@ -65,10 +68,9 @@ export const logout = async (req, res, next) => {
     if (tokenFromCookie) {
       await authService.logoutUser(tokenFromCookie);
     }
+    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, getClearCookieOptions(true));
+    res.clearCookie(CSRF_TOKEN_COOKIE_NAME, getClearCookieOptions(false));
 
-    const { maxAge, ...clearOptions } = getRefreshTokenCookieOptions();
-    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, clearOptions);
-    res.clearCookie(CSRF_TOKEN_COOKIE_NAME, { ...clearOptions, httpOnly: false });
 
     res.status(204).send();
   } catch (error) {

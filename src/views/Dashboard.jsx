@@ -10,7 +10,7 @@ import ChartCard from "../components/ui/ChartCard";
 import { totals, categoriaDist } from "../utils/calculations";
 import { fmtBRL } from "../utils/format";
 import { CATEGORIA_COR, EMERALD, ROSE } from "../constants/categories";
-import { useTransactionsContext } from "../context/TransactionsContext";
+import { useTransactionsContext } from "../context/useTransactionsContext";
 
 const tooltipStyle = {
   backgroundColor: "rgba(255, 255, 255, 0.95)",
@@ -32,17 +32,17 @@ export default function Dashboard() {
   const { entradas, saidas, saldo } = useMemo(() => totals(todas), [todas]);
 
   const chartData = useMemo(() => {
-    let acumulado = 0;
-    return [...weeks].reverse().map((w) => {
+    return [...weeks].reverse().reduce((data, w) => {
       const t = totals(w.transacoes || []);
-      acumulado += t.saldo;
-      return { 
-        periodo: w.label, 
-        Entradas: t.entradas, 
-        Saídas: t.saidas, 
-        Saldo: acumulado 
-      };
-    });
+      const acumulado = (data.at(-1)?.Saldo || 0) + t.saldo;
+      data.push({
+        periodo: w.label,
+        Entradas: t.entradas,
+        Saídas: t.saidas,
+        Saldo: acumulado
+      });
+      return data;
+    }, []);
   }, [weeks]);
 
   const pieData = useMemo(() => categoriaDist(todas), [todas]);
@@ -71,7 +71,6 @@ export default function Dashboard() {
         <SummaryCard label="Saldo do Período" value={fmtBRL(saldo)} icon={Wallet} tone="saldo" />
       </div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      
         <ChartCard title="Entradas x Saídas" subtitle="Comparativo semanal do mês atual">
           <div className="w-full h-64 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -96,14 +95,14 @@ export default function Dashboard() {
                 <XAxis dataKey="periodo" tick={{ fontSize: 11, fill: "#64748b" }} axisLine={{ stroke: "#cbd5e1" }} />
                 <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
                 <Tooltip formatter={(v) => fmtBRL(v)} contentStyle={tooltipStyle} />
-                <Line 
-                  type="monotone" 
-                  dataKey="Saldo" 
-                  stroke="#1e293b" 
-                  strokeWidth={2.5} 
-                  dot={{ r: 4, fill: "#1e293b", strokeWidth: 2, stroke: "#fff" }} 
+                <Line
+                  type="monotone"
+                  dataKey="Saldo"
+                  stroke="#1e293b"
+                  strokeWidth={2.5}
+                  dot={{ r: 4, fill: "#1e293b", strokeWidth: 2, stroke: "#fff" }}
                   activeDot={{ r: 6, fill: "#0f172a" }}
-                  animationDuration={600} 
+                  animationDuration={600}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -113,12 +112,12 @@ export default function Dashboard() {
           <div className="w-full h-64 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                <Pie 
-                  data={pieData} 
-                  dataKey="valor" 
-                  nameKey="categoria" 
-                  innerRadius={50} 
-                  outerRadius={80} 
+                <Pie
+                  data={pieData}
+                  dataKey="valor"
+                  nameKey="categoria"
+                  innerRadius={50}
+                  outerRadius={80}
                   paddingAngle={3}
                   animationDuration={500}
                 >

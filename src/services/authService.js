@@ -29,7 +29,7 @@ export const authService = {
           if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
             throw error;
           }
-          throw new Error(getApiErrorMessage(error, 'Falha ao renovar a sessão do usuário'));
+          throw new Error(getApiErrorMessage(error, 'Falha ao renovar a sessão do usuário'), { cause: error });
         }
       })().finally(() => {
         refreshPromise = null;
@@ -49,7 +49,7 @@ export const authService = {
       if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
         throw error;
       }
-      throw new Error(getApiErrorMessage(error, 'Falha ao recuperar sessão do usuário'));
+      throw new Error(getApiErrorMessage(error, 'Falha ao recuperar sessão do usuário'), { cause: error });
     }
   },
 
@@ -61,12 +61,12 @@ export const authService = {
       }
       return normalizeUser(response.data);
     } catch (error) {
-      throw new Error(getApiErrorMessage(error, 'E-mail ou senha inválidos'));
+      throw new Error(getApiErrorMessage(error, 'E-mail ou senha inválidos'), { cause: error });
     }
   },
 
   async logout() {
-    setAccessToken(null); 
+    setAccessToken(null);
     try {
       await api.post('/auth/logout');
     } catch (error) {
@@ -74,7 +74,7 @@ export const authService = {
         return;
       }
       console.error("Falha na chamada de logout da API:", error);
-      throw new Error(getApiErrorMessage(error, 'Falha ao encerrar sessão no servidor'));
+      throw new Error(getApiErrorMessage(error, 'Falha ao encerrar sessão no servidor'), { cause: error });
     }
   },
 };

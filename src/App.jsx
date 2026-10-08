@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { useAuth } from "./context/AuthContext";
+import { useAuth } from "./context/useAuth";
 import { TransactionsProvider } from "./context/TransactionsContext";
 import LoginPage from "./views/LoginPage";
 import { Sidebar, MobileDrawer } from "./components/layout/Sidebar";

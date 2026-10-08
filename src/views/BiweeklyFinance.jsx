@@ -1,4 +1,4 @@
-import { useTransactionsContext } from "../context/TransactionsContext";
+import { useTransactionsContext } from "../context/useTransactionsContext";
 import PeriodControlView from "../components/ui/PeriodControlView";
 
 export default function BiweeklyFinance() {

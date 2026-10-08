@@ -17,6 +17,9 @@ const handlePostgresError = (err) => {
 };
 
 export const errorHandler = (err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
   let error = err;
 
   if (err instanceof ZodError) {

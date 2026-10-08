@@ -1,31 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { CATEGORIAS } from '../../constants/categories';
+export default function TransactionForm(props) {
+  return <TransactionFormFields key={JSON.stringify(props.initialData)} {...props} />;
+}
+function TransactionFormFields({ onSubmit, initialData = null, onCancel, submitButtonText = "Salvar", isSubmitting = false }) {
+  const [description, setDescription] = useState(initialData?.description || '');
+  const [amount, setAmount] = useState(initialData?.amount || '');
+  const [type, setType] = useState(initialData?.type || 'expense');
+  const [category, setCategory] = useState(initialData?.category || CATEGORIAS[0]?.value || 'Outros');
+  const [date, setDate] = useState(
+    initialData
+      ? (initialData.date || '').split('T')[0]
+      : new Date().toISOString().split('T')[0]
+  );
+  const [observation, setObservation] = useState(initialData?.observation || '');
 
-export default function TransactionForm({ onSubmit, initialData = null, onCancel, submitButtonText = "Salvar", isSubmitting = false }) {
-  const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
-  const [type, setType] = useState('expense');
-  const [category, setCategory] = useState(CATEGORIAS[0]?.value || 'Outros');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [observation, setObservation] = useState('');
 
-  useEffect(() => {
-    if (initialData && Object.keys(initialData).length > 0) {
-      setDescription(initialData.description || '');
-      setAmount(initialData.amount || '');
-      setType(initialData.type || 'expense');
-      setCategory(initialData.category || 'Outros');
-      setDate((initialData.date || '').split('T')[0]);
-      setObservation(initialData.observation || '');
-    } else {
-      setDescription('');
-      setAmount('');
-      setType('expense');
-      setCategory(CATEGORIAS[0]?.value || 'Outros');
-      setDate(new Date().toISOString().split('T')[0]);
-      setObservation('');
-    }
-  }, [initialData]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

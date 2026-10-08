@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowUpRight, ArrowDownRight, Plus } from "lucide-react";
 import PeriodSelector from "./PeriodSelector";
 import SummaryCard from "./SummaryCard";
@@ -19,11 +19,6 @@ export default function PeriodControlView({
   const [selectedPeriodId, setSelectedPeriodId] = useState(null);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (periods.length > 0 && !selectedPeriodId) {
-      setSelectedPeriodId(periods[0].id);
-    }
-  }, [periods, selectedPeriodId]);
 
   const activePeriod =
     periods.find((p) => p.id === selectedPeriodId) || periods[0] || {};
@@ -54,7 +49,7 @@ export default function PeriodControlView({
     <div className="space-y-6">
       <PeriodSelector
         periods={periods}
-        selectedId={selectedPeriodId || periods[0]?.id}
+        selectedId={activePeriod.id}
         onChange={setSelectedPeriodId}
       />
 

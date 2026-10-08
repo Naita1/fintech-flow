@@ -1,10 +1,16 @@
+const toCents = (amount) => {
+  const numericAmount = Number(amount);
+  if (!Number.isFinite(numericAmount)) return 0;
+  return Math.round((numericAmount + Math.sign(numericAmount) * Number.EPSILON) * 100);
+};
+
 export const totals = (transacoes = []) => {
   if (!Array.isArray(transacoes)) return { entradas: 0, saidas: 0, saldo: 0 };
 
   const { entradas, saidas } = transacoes.reduce(
     (acc, t) => {
       const type = t?.type;
-      const amount = t?.amount || 0;
+      const amount = toCents(t?.amount ?? 0);
 
       if (type === 'income') {
         acc.entradas += amount;
@@ -16,7 +22,11 @@ export const totals = (transacoes = []) => {
     { entradas: 0, saidas: 0 }
   );
 
-  return { entradas, saidas, saldo: entradas - saidas };
+  return {
+    entradas: entradas / 100,
+    saidas: saidas / 100,
+    saldo: (entradas - saidas) / 100,
+  };
 };
 
 export const categoriaDist = (transacoes = []) => {
@@ -24,7 +34,7 @@ export const categoriaDist = (transacoes = []) => {
 
   const distributionMap = transacoes.reduce((acc, t) => {
     const type = t?.type;
-    const amount = t?.amount || 0;
+    const amount = toCents(t?.amount ?? 0);
     const category = t?.category || 'Outros';
 
     if (type === 'expense') {
@@ -35,6 +45,6 @@ export const categoriaDist = (transacoes = []) => {
 
   return Object.entries(distributionMap).map(([categoria, valor]) => ({
     categoria,
-    valor,
+    valor: valor / 100,
   }));
 };

@@ -1,8 +1,8 @@
-import { createContext, useContext, useMemo } from "react";
+import { useMemo } from "react";
 import { useTransactions } from "../hooks/useTransactions";
 import { groupTransactionsByWeekly, groupTransactionsByBiweekly } from "../utils/periods";
+import { TransactionsContext } from "./TransactionsContextValue";
 
-const TransactionsContext = createContext(null);
 
 export function TransactionsProvider({ children }) {
   const {
@@ -55,11 +55,3 @@ export function TransactionsProvider({ children }) {
     </TransactionsContext.Provider>
   );
 }
-
-export const useTransactionsContext = () => {
-  const context = useContext(TransactionsContext);
-  if (!context) {
-    throw new Error("useTransactionsContext deve ser utilizado dentro de um TransactionsProvider");
-  }
-  return context;
-};

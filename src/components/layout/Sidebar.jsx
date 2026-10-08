@@ -1,7 +1,7 @@
 import { LayoutDashboard, CalendarDays, CalendarRange, FileText, Wallet, X } from "lucide-react";
 import { NavLink } from "react-router-dom";
+const NAV_ITEMS = [
 
-export const NAV_ITEMS = [
   { id: "dashboard", path: "/", label: "Dashboard", icon: LayoutDashboard },
   { id: "semanal", path: "/semanal", label: "Financeiro Semanal", icon: CalendarDays },
   { id: "quinzenal", path: "/quinzenal", label: "Financeiro Quinzenal", icon: CalendarRange },

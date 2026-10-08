@@ -4,7 +4,7 @@ import CategoriaBadge from "../components/ui/CategoriaBadge";
 import { totals } from "../utils/calculations";
 import { fmtBRL } from "../utils/format";
 import { formatDate } from "../utils/formatDate";
-import { useTransactionsContext } from "../context/TransactionsContext";
+import { useTransactionsContext } from "../context/useTransactionsContext";
 
 export default function FinancialReport() {
   const { weeks = [], quinzenas = [] } = useTransactionsContext();
@@ -26,17 +26,17 @@ export default function FinancialReport() {
   const sorted = [...(period.transacoes || [])].sort((a, b) => {
     return String(a.date).localeCompare(String(b.date));
   });
+  const linhas = sorted.reduce((rows, t) => {
 
-  let saldoCorrido = 0;
-  const linhas = sorted.map((t) => {
     const isIncome = t.type === "income";
-    saldoCorrido += isIncome ? t.amount : -t.amount;
+    const saldoCorrido = (rows.at(-1)?.saldoCorrido || 0) + (isIncome ? t.amount : -t.amount);
+    rows.push({
 
-    return {
       ...t,
-      saldoCorrido
-    };
-  });
+      saldoCorrido,
+    });
+    return rows;
+  }, []);
 
   const { entradas, saidas, saldo } = totals(period.transacoes || []);
 
@@ -47,7 +47,6 @@ export default function FinancialReport() {
           <h2 className="text-lg font-bold text-slate-800 tracking-tight truncate">Relatório financeiro</h2>
           <p className="text-sm text-slate-400 truncate">Visualização em formato de planilha</p>
         </div>
-        
         <div className="relative shrink-0">
           <select
             value={selectedId || period.id}
@@ -73,7 +72,6 @@ export default function FinancialReport() {
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        
         <div className="flex flex-col gap-2 border-b border-dashed border-slate-200 p-4 sm:p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3 min-w-0">
             <div className="p-2.5 bg-slate-100 rounded-xl shrink-0">
@@ -141,9 +139,7 @@ export default function FinancialReport() {
                 <span className="font-mono text-xs text-slate-400 font-medium">{formatDate(t.date)}</span>
                 <CategoriaBadge categoria={t.category} />
               </div>
-              
               <p className="font-semibold text-sm text-slate-800 leading-tight">{t.description}</p>
-              
               <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100/80">
                 <div className="space-y-0.5">
                   <span className="text-slate-400 block text-[11px]">Movimentação</span>

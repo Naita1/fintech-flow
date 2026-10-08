@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { transactionAPIService } from '../services/transactionAPIService';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 
 const sortByDateDesc = (a, b) => {
   const timeA = a?.date ? new Date(a.date).getTime() : 0;
@@ -16,6 +16,7 @@ export function useTransactions(filters = {}) {
   const [error, setError] = useState(null);
 
   const filtersKey = JSON.stringify(filters);
+  const stableFilters = useMemo(() => JSON.parse(filtersKey), [filtersKey]);
 
   const fetchTransactions = useCallback(async (signal) => {
     if (!isAuthenticated) {
@@ -27,7 +28,7 @@ export function useTransactions(filters = {}) {
     setLoading(true);
     setError(null);
     try {
-      const data = await transactionAPIService.getAll(filters, signal);
+      const data = await transactionAPIService.getAll(stableFilters, signal);
       const safeTransactions = Array.isArray(data) ? data : [];
       setTransactions(safeTransactions.sort(sortByDateDesc));
     } catch (err) {
@@ -39,17 +40,20 @@ export function useTransactions(filters = {}) {
         setLoading(false);
       }
     }
-  }, [filtersKey, isAuthenticated]);
+  }, [stableFilters, isAuthenticated]);
 
   useEffect(() => {
     if (!isAuthenticated) {
-      setTransactions([]);
-      setLoading(false);
       return undefined;
     }
 
     const controller = new AbortController();
-    fetchTransactions(controller.signal);
+    Promise.resolve().then(() => {
+      if (!controller.signal.aborted) {
+        return fetchTransactions(controller.signal);
+      }
+      return undefined;
+    });
 
     return () => {
       controller.abort();
@@ -66,7 +70,7 @@ export function useTransactions(filters = {}) {
     } catch (err) {
       setError(err.message);
       console.error('Falha ao adicionar transação:', err);
-      throw err; 
+      throw err;
     }
   }, [fetchTransactions]);
 
@@ -105,9 +109,9 @@ export function useTransactions(filters = {}) {
   }, [fetchTransactions]);
 
   return {
-    transactions,
-    loading,
-    error,
+    transactions: isAuthenticated ? transactions : [],
+    loading: authLoading || (isAuthenticated && loading),
+    error: isAuthenticated ? error : null,
     addTransaction,
     updateTransaction,
     deleteTransaction,
