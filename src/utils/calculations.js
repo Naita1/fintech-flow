@@ -1,4 +1,4 @@
-const toCents = (amount) => {
+export const toCents = (amount) => {
   const numericAmount = Number(amount);
   if (!Number.isFinite(numericAmount)) return 0;
   return Math.round((numericAmount + Math.sign(numericAmount) * Number.EPSILON) * 100);

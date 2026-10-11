@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Building2, ChevronDown } from "lucide-react";
 import CategoriaBadge from "../components/ui/CategoriaBadge";
-import { totals } from "../utils/calculations";
+import TransactionFilters from "../components/ui/TransactionFilters";
+import { useTransactionFilters } from "../hooks/useTransactionFilters";
+import { toCents, totals } from "../utils/calculations";
 import { fmtBRL } from "../utils/format";
 import { formatDate } from "../utils/formatDate";
 import { useTransactionsContext } from "../context/useTransactionsContext";
@@ -14,6 +16,18 @@ export default function FinancialReport() {
   const [selectedId, setSelectedId] = useState(() => allPeriods[0]?.id || "");
 
   const period = allPeriods.find((p) => p.id === selectedId) || allPeriods[0];
+  const {
+    filteredTransactions,
+    categories,
+    search,
+    setSearch,
+    category,
+    setCategory,
+    type,
+    setType,
+    hasActiveFilters,
+    clearFilters,
+  } = useTransactionFilters(period?.transacoes || []);
 
   if (!period) {
     return (
@@ -23,22 +37,21 @@ export default function FinancialReport() {
     );
   }
 
-  const sorted = [...(period.transacoes || [])].sort((a, b) => {
+  const sorted = [...filteredTransactions].sort((a, b) => {
     return String(a.date).localeCompare(String(b.date));
   });
   const linhas = sorted.reduce((rows, t) => {
-
     const isIncome = t.type === "income";
-    const saldoCorrido = (rows.at(-1)?.saldoCorrido || 0) + (isIncome ? t.amount : -t.amount);
+    const saldoCorridoCentavos = toCents(rows.at(-1)?.saldoCorrido || 0)
+      + (isIncome ? toCents(t.amount) : -toCents(t.amount));
     rows.push({
-
       ...t,
-      saldoCorrido,
+      saldoCorrido: saldoCorridoCentavos / 100,
     });
     return rows;
   }, []);
 
-  const { entradas, saidas, saldo } = totals(period.transacoes || []);
+  const { entradas, saidas, saldo } = totals(filteredTransactions);
 
   return (
     <div className="space-y-5 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-300 motion-reduce:animate-none">
@@ -89,6 +102,30 @@ export default function FinancialReport() {
           </span>
         </div>
 
+        <div className="border-b border-slate-100 p-4 sm:p-5">
+          <TransactionFilters
+            categories={categories}
+            search={search}
+            onSearchChange={setSearch}
+            category={category}
+            onCategoryChange={setCategory}
+            type={type}
+            onTypeChange={setType}
+            hasActiveFilters={hasActiveFilters}
+            onClearFilters={clearFilters}
+          />
+        </div>
+
+        {linhas.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-sm font-medium text-slate-500">
+              {hasActiveFilters
+                ? "Nenhuma transação encontrada com os filtros selecionados."
+                : "Nenhuma movimentação registrada neste período ainda."}
+            </p>
+          </div>
+        ) : (
+          <>
         <div className="hidden md:block overflow-x-auto scrolling-touch">
           <table className="w-full text-left text-sm">
             <thead>
@@ -175,6 +212,8 @@ export default function FinancialReport() {
             </div>
           </div>
         </div>
+          </>
+        )}
 
       </div>
     </div>

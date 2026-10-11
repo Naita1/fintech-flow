@@ -6,7 +6,12 @@ import TipoBadge from "./TipoBadge";
 import CategoriaBadge from "./CategoriaBadge";
 import EditTransactionModal from "./EditTransactionModal";
 
-export default function FinancialTable({ transacoes, onDeleteTransaction, onUpdateTransaction }) {
+export default function FinancialTable({
+  transacoes = [],
+  hasActiveFilters = false,
+  onDeleteTransaction,
+  onUpdateTransaction,
+}) {
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
 
@@ -37,11 +42,13 @@ export default function FinancialTable({ transacoes, onDeleteTransaction, onUpda
     return t.type === "income";
   };
 
-  if (!transacoes || transacoes.length === 0) {
+  if (transacoes.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center transition-all duration-200">
         <p className="text-sm font-medium text-slate-500">
-          Nenhuma movimentação registrada neste período ainda.
+          {hasActiveFilters
+            ? "Nenhuma transação encontrada com os filtros selecionados."
+            : "Nenhuma movimentação registrada neste período ainda."}
         </p>
       </div>
     );

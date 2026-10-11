@@ -7,6 +7,8 @@ import FinancialTable from "./FinancialTable";
 import AddTransactionModal from "./AddTransactionModal";
 import { totals } from "../../utils/calculations";
 import { fmtBRL } from "../../utils/format";
+import TransactionFilters from "./TransactionFilters";
+import { useTransactionFilters } from "../../hooks/useTransactionFilters";
 
 export default function PeriodControlView({
   periods = [],
@@ -22,7 +24,19 @@ export default function PeriodControlView({
 
   const activePeriod =
     periods.find((p) => p.id === selectedPeriodId) || periods[0] || {};
-  const transacoes = activePeriod?.transacoes || [];
+  const todasTransacoes = activePeriod?.transacoes || [];
+  const {
+    filteredTransactions: transacoes,
+    categories,
+    search,
+    setSearch,
+    category,
+    setCategory,
+    type,
+    setType,
+    hasActiveFilters,
+    clearFilters,
+  } = useTransactionFilters(todasTransacoes);
   const { entradas, saidas, saldo } = totals(transacoes);
 
   const handleAddWithFrequency = (data) => {
@@ -80,8 +94,20 @@ export default function PeriodControlView({
             <span className="sm:hidden">Nova</span>
           </button>
         </div>
+        <TransactionFilters
+          categories={categories}
+          search={search}
+          onSearchChange={setSearch}
+          category={category}
+          onCategoryChange={setCategory}
+          type={type}
+          onTypeChange={setType}
+          hasActiveFilters={hasActiveFilters}
+          onClearFilters={clearFilters}
+        />
         <FinancialTable
           transacoes={transacoes}
+          hasActiveFilters={hasActiveFilters}
           onDeleteTransaction={onDeleteTransaction}
           onUpdateTransaction={handleUpdateWithFrequency}
         />
