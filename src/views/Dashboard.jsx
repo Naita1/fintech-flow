@@ -7,10 +7,13 @@ import { ArrowUpRight, ArrowDownRight, TrendingUp, TrendingDown, Wallet } from "
 import SummaryCard from "../components/ui/SummaryCard";
 import ProfitLossIndicator from "../components/ui/ProfitLossIndicator";
 import ChartCard from "../components/ui/ChartCard";
+import BudgetCard from "../components/ui/BudgetCard";
 import { totals, categoriaDist } from "../utils/calculations";
 import { fmtBRL } from "../utils/format";
+import { monthlyExpensesByCategory } from "../utils/budgets";
 import { CATEGORIA_COR, EMERALD, ROSE } from "../constants/categories";
 import { useTransactionsContext } from "../context/useTransactionsContext";
+import { useBudgets } from "../hooks/useBudgets";
 
 const tooltipStyle = {
   backgroundColor: "rgba(255, 255, 255, 0.95)",
@@ -23,7 +26,16 @@ const tooltipStyle = {
 };
 
 export default function Dashboard() {
-  const { weeks = [], quinzenas = [] } = useTransactionsContext();
+  const { weeks = [], quinzenas = [], transactions = [] } = useTransactionsContext();
+  const { budgets, error: budgetError, isReady, setBudget, removeBudget } = useBudgets();
+  const spendingByCategory = useMemo(
+    () => monthlyExpensesByCategory(transactions),
+    [transactions]
+  );
+  const monthLabel = new Intl.DateTimeFormat("pt-BR", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
 
   const todas = useMemo(() => {
     return (weeks || []).flatMap((w) => w.transacoes || []);
@@ -70,6 +82,15 @@ export default function Dashboard() {
         />
         <SummaryCard label="Saldo do Período" value={fmtBRL(saldo)} icon={Wallet} tone="saldo" />
       </div>
+      <BudgetCard
+        budgets={budgets}
+        spendingByCategory={spendingByCategory}
+        error={budgetError}
+        isReady={isReady}
+        onSave={setBudget}
+        onRemove={removeBudget}
+        monthLabel={monthLabel}
+      />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ChartCard title="Entradas x Saídas" subtitle="Comparativo semanal do mês atual">
           <div className="w-full h-64 sm:h-72">
