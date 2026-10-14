@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ArrowUpRight, ArrowDownRight, Plus } from "lucide-react";
 import PeriodSelector from "./PeriodSelector";
 import SummaryCard from "./SummaryCard";
@@ -37,9 +37,9 @@ export default function PeriodControlView({
     hasActiveFilters,
     clearFilters,
   } = useTransactionFilters(todasTransacoes);
-  const { entradas, saidas, saldo } = totals(transacoes);
+  const { entradas, saidas, saldo } = useMemo(() => totals(transacoes), [transacoes]);
 
-  const handleAddWithFrequency = (data) => {
+  const handleAddWithFrequency = useCallback((data) => {
     if (typeof onAddTransaction !== "function") {
       return Promise.reject(new Error("Ação de salvar transação indisponível."));
     }
@@ -47,9 +47,9 @@ export default function PeriodControlView({
       ...data,
       frequency: frequenciaPadrao === "quinzenal" ? "biweekly" : "weekly",
     });
-  };
+  }, [onAddTransaction, frequenciaPadrao]);
 
-  const handleUpdateWithFrequency = (data) => {
+  const handleUpdateWithFrequency = useCallback((data) => {
     if (typeof onUpdateTransaction === "function") {
       return onUpdateTransaction({
         ...data,
@@ -57,7 +57,7 @@ export default function PeriodControlView({
       });
     }
     return Promise.reject(new Error("Ação de atualização de transação indisponível."));
-  };
+  }, [onUpdateTransaction, frequenciaPadrao]);
 
   return (
     <div className="space-y-6">

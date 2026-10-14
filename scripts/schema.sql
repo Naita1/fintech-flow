@@ -32,6 +32,10 @@ CREATE INDEX IF NOT EXISTS idx_transactions_active_user_date
     ON transactions(user_id, date) 
     WHERE deleted_at IS NULL;
 
+CREATE INDEX IF NOT EXISTS idx_transactions_active_user_date_created
+    ON transactions(user_id, date DESC, created_at DESC)
+    WHERE deleted_at IS NULL;
+
 CREATE INDEX IF NOT EXISTS idx_transactions_user_category 
     ON transactions(user_id, category) 
     WHERE deleted_at IS NULL;

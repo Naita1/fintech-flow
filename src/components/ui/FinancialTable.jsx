@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Trash2, Pencil } from "lucide-react";
 import { fmtBRL } from "../../utils/format";
 import { formatDate } from "../../utils/formatDate";
@@ -6,7 +6,7 @@ import TipoBadge from "./TipoBadge";
 import CategoriaBadge from "./CategoriaBadge";
 import EditTransactionModal from "./EditTransactionModal";
 
-export default function FinancialTable({
+function FinancialTable({
   transacoes = [],
   hasActiveFilters = false,
   onDeleteTransaction,
@@ -102,14 +102,16 @@ export default function FinancialTable({
                   <td className="whitespace-nowrap px-5 py-3.5 text-center">
                     <button
                       onClick={() => handleEdit(t)}
-                      className="inline-flex items-center justify-center p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors mr-1"
+                      disabled={t.isPending}
+                      className="inline-flex items-center justify-center p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors mr-1 disabled:pointer-events-none disabled:opacity-50"
                       title="Editar movimentação"
                     >
                       <Pencil size={16} />
                     </button>
                     <button
                       onClick={() => handleDelete(t.id)}
-                      className="inline-flex items-center justify-center p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
+                      disabled={t.isPending}
+                      className="inline-flex items-center justify-center p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors disabled:pointer-events-none disabled:opacity-50"
                       title="Excluir movimentação"
                     >
                       <Trash2 size={16} />
@@ -159,14 +161,16 @@ export default function FinancialTable({
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => handleEdit(t)}
-                    className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
+                    disabled={t.isPending}
+                    className="p-1 text-slate-400 hover:text-blue-600 transition-colors disabled:pointer-events-none disabled:opacity-50"
                     title="Editar movimentação"
                   >
                     <Pencil size={16} />
                   </button>
                   <button
                     onClick={() => handleDelete(t.id)}
-                    className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                    disabled={t.isPending}
+                    className="p-1 text-slate-400 hover:text-rose-600 transition-colors disabled:pointer-events-none disabled:opacity-50"
                     title="Excluir movimentação"
                   >
                     <Trash2 size={16} />
@@ -189,3 +193,5 @@ export default function FinancialTable({
     </>
   );
 }
+
+export default memo(FinancialTable);

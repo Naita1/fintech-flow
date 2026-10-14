@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import compression from 'compression';
 
 import { checkDatabaseHealth, closeDatabasePool } from './config/database.js';
 import authRoutes from './routes/authRoutes.js';
@@ -26,6 +27,7 @@ if (isProduction) {
 }
 
 app.use(helmet());
+app.use(compression({ threshold: 1024 }));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
@@ -61,6 +63,10 @@ app.use(limiter);
 
 app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'private, no-store');
+  next();
+});
 
 app.get('/health', async (req, res) => {
   try {

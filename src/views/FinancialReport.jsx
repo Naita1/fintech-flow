@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Building2, ChevronDown } from "lucide-react";
 import CategoriaBadge from "../components/ui/CategoriaBadge";
 import TransactionFilters from "../components/ui/TransactionFilters";
@@ -11,11 +11,14 @@ import { useTransactionsContext } from "../context/useTransactionsContext";
 export default function FinancialReport() {
   const { weeks = [], quinzenas = [] } = useTransactionsContext();
 
-  const allPeriods = [...weeks, ...quinzenas];
+  const allPeriods = useMemo(() => [...weeks, ...quinzenas], [weeks, quinzenas]);
 
   const [selectedId, setSelectedId] = useState(() => allPeriods[0]?.id || "");
 
-  const period = allPeriods.find((p) => p.id === selectedId) || allPeriods[0];
+  const period = useMemo(
+    () => allPeriods.find((item) => item.id === selectedId) || allPeriods[0],
+    [allPeriods, selectedId]
+  );
   const {
     filteredTransactions,
     categories,
@@ -29,6 +32,27 @@ export default function FinancialReport() {
     clearFilters,
   } = useTransactionFilters(period?.transacoes || []);
 
+  const linhas = useMemo(() => {
+    const sorted = [...filteredTransactions].sort((a, b) => (
+      String(a.date).localeCompare(String(b.date))
+    ));
+    return sorted.reduce((rows, transaction) => {
+      const isIncome = transaction.type === "income";
+      const saldoCorridoCentavos = toCents(rows.at(-1)?.saldoCorrido || 0)
+        + (isIncome ? toCents(transaction.amount) : -toCents(transaction.amount));
+      rows.push({
+        ...transaction,
+        saldoCorrido: saldoCorridoCentavos / 100,
+      });
+      return rows;
+    }, []);
+  }, [filteredTransactions]);
+
+  const { entradas, saidas, saldo } = useMemo(
+    () => totals(filteredTransactions),
+    [filteredTransactions]
+  );
+
   if (!period) {
     return (
       <div className="flex flex-1 items-center justify-center p-8 text-center text-slate-500 font-medium bg-white rounded-2xl border border-slate-200 shadow-sm">
@@ -36,22 +60,6 @@ export default function FinancialReport() {
       </div>
     );
   }
-
-  const sorted = [...filteredTransactions].sort((a, b) => {
-    return String(a.date).localeCompare(String(b.date));
-  });
-  const linhas = sorted.reduce((rows, t) => {
-    const isIncome = t.type === "income";
-    const saldoCorridoCentavos = toCents(rows.at(-1)?.saldoCorrido || 0)
-      + (isIncome ? toCents(t.amount) : -toCents(t.amount));
-    rows.push({
-      ...t,
-      saldoCorrido: saldoCorridoCentavos / 100,
-    });
-    return rows;
-  }, []);
-
-  const { entradas, saidas, saldo } = totals(filteredTransactions);
 
   return (
     <div className="space-y-5 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-300 motion-reduce:animate-none">

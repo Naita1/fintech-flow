@@ -35,7 +35,8 @@ export async function getAllTransactions(userId, filters = {}) {
     query += ` AND date BETWEEN $${params.length - 1} AND $${params.length}`;
   } else if (month && year) {
     params.push(parseInt(month, 10), parseInt(year, 10));
-    query += ` AND EXTRACT(MONTH FROM date) = $${params.length - 1} AND EXTRACT(YEAR FROM date) = $${params.length}`;
+    query += ` AND date >= make_date($${params.length}::int, $${params.length - 1}::int, 1)
+      AND date < (make_date($${params.length}::int, $${params.length - 1}::int, 1) + INTERVAL '1 month')`;
   }
 
   if (category) {
@@ -45,7 +46,7 @@ export async function getAllTransactions(userId, filters = {}) {
 
   query += ' ORDER BY date DESC, created_at DESC';
 
-  if (filters.limit !== undefined) {
+  if (filters.limit !== undefined || filters.page !== undefined) {
     const parsedPage = Math.max(1, parseInt(filters.page, 10) || 1);
     const parsedLimit = Math.max(1, Math.min(100, parseInt(filters.limit, 10) || 20));
     const offset = (parsedPage - 1) * parsedLimit;
@@ -75,7 +76,8 @@ export async function getTransactionSummary(userId, filters = {}) {
     query += ` AND date BETWEEN $2 AND $3`;
   } else if (month && year) {
     params.push(parseInt(month, 10), parseInt(year, 10));
-    query += ` AND EXTRACT(MONTH FROM date) = $2 AND EXTRACT(YEAR FROM date) = $3`;
+    query += ` AND date >= make_date($3::int, $2::int, 1)
+      AND date < (make_date($3::int, $2::int, 1) + INTERVAL '1 month')`;
   }
 
   const { rows } = await pool.query(query, params);

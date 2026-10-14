@@ -12,10 +12,20 @@ export default function MainContent() {
 
   if (loading) {
     return (
-      <main className="flex flex-1 items-center justify-center p-4">
-        <div className="flex items-center space-x-2 font-medium text-slate-500">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-400 border-t-transparent" />
-          <span>Carregando transações...</span>
+      <main className="flex-1 p-4 sm:p-6" role="status" aria-live="polite" aria-label="Carregando transações">
+        <div className="space-y-6 motion-safe:animate-pulse">
+          <div className="h-28 rounded-2xl bg-white shadow-sm" />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
+            {Array.from({ length: 4 }, (_, index) => (
+              <div key={index} className="h-24 rounded-xl border border-slate-200 bg-white" />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {Array.from({ length: 4 }, (_, index) => (
+              <div key={index} className="h-72 rounded-xl border border-slate-200 bg-white" />
+            ))}
+          </div>
+          <span className="sr-only">Carregando transações...</span>
         </div>
       </main>
     );
@@ -40,8 +50,10 @@ export default function MainContent() {
     <main className="flex-1 p-4 sm:p-6">
       <Suspense
         fallback={
-          <div className="flex h-full items-center justify-center text-sm text-slate-400 animate-pulse">
-            Carregando tela...
+          <div className="space-y-4 motion-safe:animate-pulse" role="status" aria-live="polite">
+            <div className="h-8 w-56 rounded-lg bg-slate-200" />
+            <div className="h-64 rounded-xl border border-slate-200 bg-white" />
+            <span className="sr-only">Carregando tela...</span>
           </div>
         }
       >
